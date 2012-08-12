@@ -1,0 +1,10 @@
+
+.DS_Store
+
+*.pyc
+
+app.yaml
+
+settings.py
+
+handlers/client_secrets.json

@@ -1,0 +1,80 @@
+{% load filters %}<div class="form-horizontal">
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="name">名字<sup>*</sup></label>
+      <div class="controls">
+        <input type="text" class="input-large" id="name" name="name" required value="{{ edit.name }}" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="notes">说明</label>
+      <div class="controls">
+        <textarea type="text" class="input-xlarge" id="notes" name="notes">{{ edit.notes|default:"" }}</textarea>
+        <p class="help-block">支持 Markdown 格式。</p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="impact">发布级别<sup>*</sup></label>
+      <div class="controls">
+        <select class="input-medium" id="impact" name="impact" required>
+          <option></option>
+          <option value="major"{% ifequal edit.impact "major" %} selected{% endifequal %}>Major (对外全量发布，对用户有重大影响)</option>
+          <option value="minor"{% ifequal edit.impact "minor" %} selected{% endifequal %}>Minor (对外全量发布，对用户没有重大影响)</option>
+          <option value="beta"{% ifequal edit.impact "beta" %} selected{% endifequal %}>Beta (做为测试版对外发布，用户可选择下载)</option>
+          <option value="experimental"{% ifequal edit.impact "experimental" %} selected{% endifequal %}>Experimental (做为小流量实验对外发布，用户会在不知情的情况下用到)</option>          
+          <option value="dogfood"{% ifequal edit.impact "dogfood" %} selected{% endifequal %}>Dogfood (内部工具或内部试用，不对外发布)</option>
+        </select>
+        <p class="help-block">对外全量发布，包括 Major 和 Minor 两种类型，均需通过或免去 Product Design Review 和 Engineering Design Review。</p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="project">所属项目<sup>*</sup></label>
+      <div class="controls">
+        <select class="input-medium" id="project" name="project" required>
+          <option></option>
+          {% for project in all_projects %}
+          <option value="{{ project.key }}"{% if project.key == edit.project.key %} selected{% endif %}>{{ project.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+        <div class="control-group">
+      <label class="control-label" for="prod_design_doc">产品设计文档</label>
+      <div class="controls">
+        <input type="url" class="input-xlarge" id="prod_design_doc" name="prod_design_doc" placeholder="https://" {% if edit %}value="{{ edit.prod_design_doc|default:"" }}" {% endif %}/>
+        <p class="help-block">用于 Product Design Review。</p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="eng_design_doc">工程设计文档</label>
+      <div class="controls">
+        <input type="url" class="input-xlarge" id="eng_design_doc" name="eng_design_doc" placeholder="https://" {% if edit %}value="{{ edit.eng_design_doc|default:"" }}" {% endif %}/>
+        <p class="help-block">用于 Engineering Design Review。</p>
+      </div>
+    </div>
+  </fieldset>
+  <div class="control-group">
+    <label class="control-label">发布方式<sup>*</sup></label>
+    <div class="controls">
+      <label class="radio">
+        <input type="radio" name="type" value="platform" class="type platform"{% if edit.type == "platform" %} checked="checked"{% endif %} required>
+        <strong>自行发布</strong>。我自己是开车的，可能还会载客。
+      </label>
+      预定发布日期:
+      <input type="date" autocomplete="off" class="input-small due_on" name="due_on" placeholder="yyyy-mm-dd" {% if edit.type != "platform" %} disabled {% endif %} required {% if edit %}value="{{ edit.due_on|cst|date:"Y-m-d" }}" {% endif %}/>
+      <label class="radio">
+        <input type="radio" name="type" value="product" class="type product"{% if edit.type == "product" %} checked="checked"{% endif %} required>
+        <strong>别人帮我发布</strong>。我会搭别人的车。
+      </label>
+      要搭的车:
+      <select class="input-medium dependency" name="dependency" {% if edit.type != "product" %} disabled {% endif %} required>
+        <option></option>
+        {% with entry as cur_entry %}
+        {% for entry in all_active_releases %}
+        <option value="{{ entry.key }}"{% if entry.key == edit.dependency.key %} selected{% endif %}{% if cur_entry.key == entry.key %} disabled{% endif %}>[{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }}) - {{ entry.due_on|cst|date:"Y-m-d" }}</option>
+        {% endfor %}
+        {% endwith %}
+      </select>
+    </div>
+  </div>  
+</div>

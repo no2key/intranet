@@ -1,0 +1,81 @@
+{% load filters %}
+{% load markup %}
+<div style="color: #333;">
+{% with entry.unmailed_stories as stories %}
+  <ul style=" line-height: 18px; list-style: none; margin: 0 0 9px; padding: 0">
+  {% for story in stories %}
+    <li style="line-height: 18px">
+      {% if story.type == "system" %}
+      <p style="margin: 0 0 9px">
+        <small style="font-size: 11px; color: #999;">
+        {% with story.created_by as person %}
+          <strong><a href="{{ base_url }}~{{ person.id }}" title="{{ person.given_name }} {{ person.family_name }}">{{ person.id }}</a></strong>
+        {% endwith %}
+        {{ story.text|safe }}
+        {% if story.project %}·
+          {% with story.project as project %}
+            <a href="{{ base_url }}projects/{{ project.key }}">{{ project.name }}</a>
+          {% endwith %}
+        {% endif %}
+        {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+        · {{ story.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}
+        </small>
+      </p>
+      {% else %}
+      <blockquote style="padding: 0 0 0 15px; margin: 0 0 18px; border-left: 5px solid #EEE;">
+        <p style="margin: 0; font-size: 16px; font-weight: 300; line-height: 22.5px;">{{ story.text|markdown }}</p>
+        <small style="display: block; line-height: 18px; color: #999;">
+          {% with story.created_by as person %}
+            <strong><a href="{{ base_url }}~{{ person.id }}" title="{{ person.given_name }} {{ person.family_name }}">{{ person.id }}</a></strong>
+          {% endwith %}
+          {% if story.project %}· 
+            {% with story.project as project %}
+            <a href="{{ base_url }}projects/{{ project.key }}">{{ project.name }}</a>
+            {% endwith %}
+          {% endif %}
+          {% if story.entry %}· {% with story.entry as entry %}
+          <a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>{% endwith %}{% endif %}
+          · {{ story.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}
+        </small>
+      </blockquote>
+      {% endif %}
+    </li>
+  {% empty %}
+  <div class="alert alert-info">No updates yet! Sorry!</div>
+  {% endfor %}
+  </ul>
+{% endwith %}
+
+<div class="hero-unit" style="background-color: #EEE; border-radius: 6px; line-height: 18px; margin-bottom: 30px; padding: 60px">
+  <h1 style="font-size: 60px; font-weight: bold; letter-spacing: -1px; line-height: 60px; margin: 0; text-rendering: optimizelegibility;">
+    {{ entry.name }}
+  </h1>
+  {% with entry.impact as impact %}
+  <span style="border-radius: 3px; color: white; font-size: 11px; font-weight: bold; letter-spacing: -1px; line-height: 14px; padding: 1px 4px  2px; text-rendering: optimizelegibility; text-shadow: rgba(0, 0, 0, .25) 0 -1px 0; vertical-align: baseline; white-space: nowrap;
+  {% ifequal impact "major" %}background-color: #B94A48;{% endifequal %}
+  {% ifequal impact "minor" %}background-color: #F89406;{% endifequal %}
+  {% ifequal impact "beta" %}background-color: #3A87AD;{% endifequal %}
+  {% ifequal impact "experimental" %}background-color: #468847;{% endifequal %}
+  ">{{ impact }}</span>
+  {% endwith %}
+  <div style="font-size: 18px; line-height: 27px">
+    {{ entry.notes|markdown }}
+  </div>
+  <p style="font-size: 18px; font-weight: 200; line-height: 27px; margin-bottom: 9px;">
+    Launch on <strong>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</strong>
+    {% if entry.type == "product" %}
+    , shipped by {% with entry.dependency as entry %}<a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>{% endwith %}
+    {% else %}
+      {% for entry in entry.relier %}
+        {% if forloop.first %}
+        , also ships
+        {% endif %}
+        <a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>
+        {% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% endif %}
+    .
+  </p>
+</div>
+</div>
+<p>Reply to this email to comment, <a href="{{ base_url }}/entries/{{ entry.key }}">view and edit</a> in Wandou Labs, or follow.</p>

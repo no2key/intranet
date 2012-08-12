@@ -1,0 +1,1 @@
+<input type="text" class="input-small" autocomplete="off" name="user_id" data-provide="typeahead" data-source='[{% for person in all_persons %}"{{ person.id }}"{% if not forloop.last %},{% endif %}{% endfor %}]' />

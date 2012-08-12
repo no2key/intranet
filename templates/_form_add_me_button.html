@@ -1,0 +1,16 @@
+<form action="/projects/{{ project.key }}/members" method="post">
+  <input type="hidden" name="user_id" value="{{ person.id }}">
+  <div class="btn-group">
+    <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+      <i class="icon-plus icon-white"></i>
+      把我添加成...
+      <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="#"><button type="submit" name="role" value="fulltimer">主力成员</button></a></li>
+      <li><a href="#"><button type="submit" name="role" value="plusoner">"+1"er</button></a></li>
+      <li class="divider"></li>
+      <li><a href="#"><button type="submit" name="role" value="owner">Owner</button></a></li>
+    </ul>
+  </div>
+</form>

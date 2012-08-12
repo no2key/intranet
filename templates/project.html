@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% load filters %}
+{% load markup %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="well">
+  <div class="row-fluid">
+    <div class="span9">
+      <h2>{{ project.name }}<span class="badge">{{ project.status }}</span></h2>
+      {{ project.notes|markdown }}
+      <p><a data-toggle="modal" href="#form-project-edit"><i class="icon-pencil"></i>修改项目信息</a>
+      </p>
+    </div>
+    <div class="span3">
+      <dl class="dl">
+        <dt>Owner</dt>
+        <dd>
+          {% with project.owner as persons %}
+          {% include "_ul_persons_on_project_page.html" %}
+          {% endwith %}
+        </dd>
+        <dt>主力成员</dt>
+        <dd>
+          {% with project.fulltimers as persons %}
+          {% include "_ul_persons_on_project_page.html" %}
+          {% endwith %}
+        </dd>
+        <dt>"+1"ers</dt>
+        <dd>
+          <ul class="unstyled">
+            {% with project.plusoners as persons %}
+            {% include "_ul_persons_on_project_page.html" %}
+            {% endwith %}
+          </ul>
+        </dd>
+      </dl>
+      {% include "_form_add_me_button.html" %}
+      {% spaceless %}
+      <form action="/projects/{{ project.key }}/members" method="post" class="form-inline">
+        <div class="btn-group">
+          <div class="input-prepend input-append">
+            <span class="add-on"><i class="icon-user"></i></span>
+            {% include "_input_person.html" %}
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              <i class="icon-plus"></i>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="#"><button type="submit" name="role" value="fulltimer">添加为主力成员</button></a></li>
+              <li><a href="#"><button type="submit" name="role" value="plusoner">添加为 "+1"er</button></a></li>
+              <li class="divider"></li>
+              <li><a href="#"><button type="submit" name="role" value="owner">添加为 Owner</button></a></li>
+            </ul>
+          </div>
+        </div>
+      </form>
+      {% endspaceless %}
+    </div>
+  </div>
+</div>
+<h3>发布</h3>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#active_entries" data-toggle="tab">尚未发布</a></li>
+  <li><a href="#launched_entries" data-toggle="tab">已发布</a></li>
+  <li><a href="#cancelled_entries" data-toggle="tab">已取消</a></li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="active_entries">
+    {% with active_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}    
+  </div>
+  <div class="tab-pane" id="launched_entries">
+    {% with launched_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+  <div class="tab-pane" id="cancelled_entries">
+    {% with cancelled_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+</div>
+<h3>动态</h3>
+{% with project.stories as stories %}
+  {% include "_ul_stories.html" %}
+{% endwith %}
+{% include "_modal_project_edit.html" %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% load filters %}
+{% ifequal status "new" %}
+<div class="alert alert-info">
+  <h4 class="alert-heading">New (新)</h4>
+  <p>这是一个新建的发布，还没有开始实质工作。当开始实质工作时，请标记为「进行中」。</p>
+  <label><a data-toggle="modal" href="#form-status" class="btn btn-info">标记为「进行中」</a></label>
+</div>
+{% endifequal %}
+{% ifequal status "in progress" %}
+<div class="alert alert-info">
+  <h4 class="alert-heading">In progress (进行中)</h4>
+  <p>已经开始进行设计和研发工作。Engineering Design Review 和 Product Design Reviews，代码编写、单元测试等工作应在本阶段完成。当所有设计和研发工作完成时，请标记为「已完成」。</p>
+  <label><a data-toggle="modal" href="#form-status" class="btn btn-success">标记为「已完成」</a></label>
+</div>
+{% endifequal %}
+{% ifequal status "completed" %}
+<div class="alert alert-success">
+  <h4 class="alert-heading">Completed (已完成)</h4>
+  <p>所有计划发布的功能都已完成并冻结。如果你是搭别人的车，这意味着你的工作已经基本完成，买好票上车了，接下来的状态将由开车的同学负责。如果你是开车的同学，在一切就绪可以随时发布时，请标记为「就绪」。</p>
+  <label><a data-toggle="modal" href="#form-status" class="btn btn-success">标记为「就绪」</a></label>
+</div>
+{% endifequal %}
+{% ifequal status "ready" %}
+<div class="alert alert-success">
+  <h4 class="alert-heading">Ready (就绪)</h4>
+  <p>所有计划发布的功能，及搭车的所有功能都已研发和测试完成。代码已冻结，随时都可以发布。发布后，请标记为「已发布」。</p>
+  <label><a data-toggle="modal" href="#form-status" class="btn btn-success">标记为「已发布」</a></label>
+</div>
+{% endifequal %}
+{% ifequal status "launched" %}
+<div class="alert alert-success">
+  <h4 class="alert-heading">Launched (已发布)</h4>
+  <p>已成功于 <strong>{{ entry.launched_at|cst|date:"SHORT_DATE_FORMAT" }}</strong> 发布. <a href="#form-status" data-toggle="modal">要回滚吗?</a></p>
+</div>
+{% endifequal %}
+{% ifequal status "cancelled" %}
+<div class="alert alert-error">
+  <h4 class="alert-heading">Cancelled (已取消)</h4>
+  <p>发布已被取消. <a href="#form-status" data-toggle="modal">复活...</a></p>
+</div>
+{% endifequal %}

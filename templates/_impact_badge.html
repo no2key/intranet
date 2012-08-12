@@ -1,0 +1,12 @@
+<span class="label
+{% ifequal impact "major" %}label-important{% endifequal %}
+{% ifequal impact "minor" %}label-warning{% endifequal %}
+{% ifequal impact "beta" %}label-info{% endifequal %}
+{% ifequal impact "experimental" %}label-success{% endifequal %}
+"  rel="tooltip" title="
+{% ifequal impact "major" %}对外全量发布，对用户有重大影响{% endifequal %}
+{% ifequal impact "minor" %}对外全量发布，对用户没有重大影响{% endifequal %}
+{% ifequal impact "beta" %}做为测试版对外发布，用户可选择下载{% endifequal %}
+{% ifequal impact "experimental" %}做为小流量实验对外发布，用户会在不知情的情况下用到{% endifequal %}
+{% ifequal impact "dogfood" %}内部工具或内部试用，不对外发布{% endifequal %}
+">{{ impact }}</span>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% load filters %}
+{% load markup %}
+
+{% block title %}{{ entry.project.name }} &raquo; {{ entry.name }}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="span8">
+      <div class="breadcrumb">
+        <a href="/">所有发布</a> <span class="divider">/</span>
+        {% with entry.project as project %}{% include "_a_project.html" %}{% endwith %} <span class="divider">/</span>
+        {{ entry.name }}
+      </div>
+      <div class="hero-unit">
+        <h1>
+          {{ entry.name }}
+          {% with entry.impact as impact %}{% include "_impact_badge.html" %}{% endwith %}
+        </h1>
+        {{ entry.notes|markdown }}
+        <p>
+          预定在 <strong>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</strong>
+          {% if entry.type == "product" %}
+          , 由 {% with entry.dependency as entry %}{% include "_a_entry.html" %}{% endwith %} 发布
+          {% else %}
+            发布
+            {% for entry in entry.reliers %}
+              {% if forloop.first %}
+                , 并同时发布
+              {% endif %}
+                {% include "_a_entry.html" %}
+              {% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% endif %}
+          。
+        </p>
+      </div>
+      {% with entry.status as status %}{% include "_div_status.html" %}{% endwith %}
+      {% if entry.reliers.count %}
+        <h3>搭车的乘客</h3>
+        <p>本发布会同时发布以下项目.</p>
+        <div class="well">
+          {% with entry.reliers as entries %}{% include "_table_entries.html" %}{% endwith %}
+        </div>
+      {% endif %}
+      <h3>Reviews</h3>
+      <h6>Product Design Review</h6>
+      <p>
+        {% if entry.prod_design_doc %}
+          <a href="{{ entry.prod_design_doc }}">产品设计文档</a>
+          {% with entry.prod_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+        {% else %}
+          {% ifequal entry.prod_design_review "waived" %}
+            {% with entry.prod_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+          {% else %}
+          <a data-toggle="modal" class="btn btn-mini" href="#form-entry-edit">添加产品设计文档</a>
+        {% endifequal%}
+      {% endif %}
+        <small><a data-toggle="modal" href="#form-prod-design-review"><i class="icon-pencil"></i>修改 review 状态</a></small>
+      </p>
+      <h6>Engineering Design Review</h6>
+      <p>
+        {% if entry.eng_design_doc %}
+          <a href="{{ entry.eng_design_doc }}">工程设计文档</a>
+          {% with entry.eng_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+        {% else %}
+          {% ifequal entry.eng_design_review "waived" %}
+            {% with entry.eng_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+          {% else %}
+          <a data-toggle="modal" class="btn btn-mini" href="#form-entry-edit">添加工程设计文档</a>
+          {% endifequal%}
+        {% endif %}
+        <small><a data-toggle="modal" href="#form-eng-design-review"><i class="icon-pencil"></i>修改 review 状态</a></small>
+      </p>
+      <h3>动态</h3>
+      {% with entry.stories as stories %}{% include "_ul_stories.html" %}{% endwith %}
+      <form action="/entries/{{ entry.key }}/stories" method="post">
+        <div class="control-group"><textarea type="text" name="text" class="span8" placeholder="Say something..." autocomplete="off" required></textarea></div>
+        <button type="submit" data-loading-text="发表ing..." class="btn btn-primary">发表</button><span class="help-inline">支持 Markdown 格式。</span>
+      </form>
+    </div>
+    <div class="span4">
+      <h3>项目成员</h3>
+      <ul class="unstyled">
+        {% for notifier in entry.notifiers %}
+        <li>{% with notifier as person %}{% include "_a_person.html" %}{% endwith %}</li>
+        {% endfor %}
+      </ul>
+      {% with entry.project as project %}
+        {% include "_form_add_me_button.html" %}
+      {% endwith %}
+      <h3>其它信息</h3>
+      <ul class="unstyled">
+        <li>
+          <h6>Project</h6>
+          <p>{% with entry.project as project %}{% include "_a_project.html" %}{% endwith %}</p>
+        </li>
+        <li>
+          <h6>Calendar</h6>
+          <p><a href="{{ entry.calendar_view_uri }}">在 Google Calendar 中查看</a></p>
+        </li>
+        <li>
+          <h6>Created at</h6>
+          <p>{{ entry.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}</p>
+        </li>
+        <li>
+          <h6>Modified at</h6>
+          <p>{{ entry.modified_at|cst|date:"SHORT_DATETIME_FORMAT" }}</p>
+        </li>
+        <li class="divider"></li>
+        <li>
+          <p><a data-toggle="modal" href="#form-entry-edit"><i class="icon-pencil"></i>修改发布信息</a>
+          </p>
+        </li>
+      </ul>
+    </div>
+  </div>
+{% include "_modal_entry_edit.html" %}
+{% include "_modal_prod_design_review.html" %}
+{% include "_modal_eng_design_review.html" %}
+{% with entry.status as status %}{% include "_modal_status.html" %}{% endwith %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load filters %}
+{% load markup %}
+
+<ul class="unstyled">
+{% for story in stories %}
+  <li>
+    {% if story.type == "system" %}
+    <p>
+      <small>
+      {% with story.created_by as person %}
+        <strong>{% include "_a_person.html" %}</strong>
+      {% endwith %}
+      {{ story.text|safe }}
+      {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
+      {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+      · {{ story.created_at|timesince }} ago
+      </small>
+    </p>
+    {% else %}
+    <blockquote>
+      <p>{{ story.text|markdown }}</p>
+      <small>
+        {% with story.created_by as person %}
+          <strong>{% include "_a_person.html" %}</strong>
+        {% endwith %}
+        {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
+        {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+        · {{ story.created_at|timesince }} ago
+      </small>
+    </blockquote>
+    {% endif %}
+  </li>
+{% empty %}
+<div class="alert alert-info">没有相关动态。</div>
+{% endfor %}
+</ul>

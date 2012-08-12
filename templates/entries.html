@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}所有发布{% endblock %}
+
+{% block content %}
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#active_entries" data-toggle="tab">尚未发布</a></li>
+  <li><a href="#launched_entries" data-toggle="tab">已发布</a></li>
+  <li><a href="#cancelled_entries" data-toggle="tab">已取消</a></li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="active_entries">
+    {% with all_active_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}    
+  </div>
+  <div class="tab-pane" id="launched_entries">
+    {% with all_launched_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+  <div class="tab-pane" id="cancelled_entries">
+    {% with all_cancelled_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% endblock %}

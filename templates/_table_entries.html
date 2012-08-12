@@ -1,0 +1,45 @@
+{% load filters %}
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-status">状态</th>
+      <th class="col-name">名字</th>
+      <th class="col-project">所属项目</th>
+      <th class="col-pdr"><abbr title="Product Design Review">Prod</abbr></th>
+      <th class="col-edr"><abbr title="Engineering Design Review">Eng</abbr></th>
+      <th class="col-dueon">发布日期</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% spaceless %}
+    {% for entry in entries %}
+    <tr class="entry">
+      <td>{% with entry.status as status %}{% include "_span_status.html" %}{% endwith %}</td>
+      <td>
+        <h4>
+          <a href="/entries/{{ entry.key }}">{{ entry.name }}</a>&nbsp;
+          {% with entry.impact as impact %}{% include "_impact_badge.html" %}{% endwith %}
+        </h4>
+        <p>{{ entry.notes|default:"Owner 很懒，连说明都不写。" }}</p>
+      </td>
+      <td>{% with entry.project as project %}{% include "_a_project.html" %}{% endwith %}</td>
+      <td>
+        {% with entry.prod_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+        {% if entry.prod_design_doc %}<br /><a href="{{ entry.prod_design_doc }}">文档</a>{% endif %}
+      </td>
+      <td>
+        {% with entry.eng_design_review as status %}{% include "_span_approval.html" %}{% endwith %}
+        {% if entry.eng_design_doc %}<br /><a href="{{ entry.prod_design_doc }}">文档</a>{% endif %}
+      </td>
+      <td>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6">
+        没有发布记录。
+      </td>
+    </tr>
+    {% endfor %}
+    {% endspaceless %}
+  </tbody>
+</table>

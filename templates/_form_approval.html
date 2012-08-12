@@ -1,0 +1,35 @@
+<fieldset>
+  <div class="control-group">
+    <div class="controls">
+      {{ status }}
+      <label class="radio">
+        <input type="radio" name="status" value="new" required{% ifequal status "new" %} checked{% endifequal %}>
+        <strong>New</strong>。刚刚收到，还没有处理。
+      </label>
+      <label class="radio">
+        <input type="radio" name="status" value="ack" required{% ifequal status "ack" %} checked{% endifequal %}>
+        <strong>Ack</strong>。已收到文档，会尽快安排 review。
+      </label>
+      <label class="radio">
+        <input type="radio" name="status" value="approved" required{% ifequal status "approved" %} checked{% endifequal %}>
+        <strong>Approved</strong>。已经过 review，没有发现重大问题，同意按此实施。
+      </label>
+      <label class="radio">
+        <input type="radio" name="status" value="rejected" required{% ifequal status "rejected" %} checked{% endifequal %}>
+        <strong>Rejected</strong>。已经过 review，有重大问题，请修改后再次 review。
+      </label>
+      <label class="radio">
+        <input type="radio" name="status" value="waived" required{% ifequal status "waived" %} checked{% endifequal %}>
+        <strong>Waived</strong>。免去 review。
+      </label>
+    </div>
+  </div>
+  <hr>
+  <div class="control-group">
+    <div class="controls">
+      <textarea class="span8" id="text" name="text" rows="3" placeholder="附言..."></textarea>
+      <p class="help-block">支持 Markdown 格式。</p>
+    </div>
+  </div>
+  <!-- TODO: Remember selections. -->
+</fieldset>

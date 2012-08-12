@@ -1,0 +1,141 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!-- Consider adding an manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/b/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  {% block head %}
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="description" content="">
+  {% endblock %}
+  <meta name="author" content="">
+
+  <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory: mathiasbynens.be/notes/touch-icons -->
+
+  <!-- CSS: implied media=all -->
+  <!-- CSS concatenated and minified via ant build script-->
+  <!-- Important: Do not reference other stylesheets here! The build-script won't include them. 
+       Instead use @import in style.css -->
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- end CSS-->
+  <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
+
+  <!-- All JavaScript at the bottom, except for Modernizr / Respond.
+       Modernizr enables HTML5 elements & feature detects; Respond is a polyfill for min/max-width CSS3 Media Queries
+       For optimal performance, use a custom Modernizr build: www.modernizr.com/download/ -->
+  <script src="/js/libs/modernizr-2.0.6.min.js"></script>
+  
+  {% block head_include %}{% endblock %}
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{{ ga }}']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="container" class="container-fluid">
+    <header class="page-header">
+      <div id="top">
+        <span id="login">
+          <strong class="alert alert-error">CONFIDENTIAL! 公司机密</strong> | 
+          <strong>{{ person.email }}</strong> |
+          <a data-toggle="modal" href="#calendar"><i class="icon-calendar"></i>日历</a> | 
+          <a href="/logout">退出</a>
+        </span>
+      </div>
+      <h1>
+        {% block headline %}Hello, {{ person.given_name }}!{% endblock %}
+      </h1>
+    </header>
+    <div id="main" role="main" class="row-fluid">
+      <div id="sidebar" class="span2">
+        <p>
+          <a class="btn btn-primary" data-toggle="modal" href="#form-entry-new">新发布</a>
+          <a class="btn" data-toggle="modal" href="#form-project-new">新项目</a>
+        </p>
+        <ul class="nav nav-list">
+          <!-- li><a href="/">Home</a></li -->
+          <li class="nav-header">Projects</li>
+          <li{% ifequal request.path "/entries" %} class="active"{% endifequal %}><a href="/entries">所有发布</a></li>
+          {% with project as cur_project %}
+          {% for project in all_projects %}
+          <li{% ifequal project.key cur_project.key %} class="active"{% endifequal %}>{% include "_a_project.html" %}</li>
+          {% endfor %}
+          {% endwith %}
+          <li{% ifequal request.path "/projects" %} class="active"{% endifequal %}><a href="/projects">所有项目</a></li>
+          <li class="nav-header">Design Reviews</li>
+          <li{% ifequal request.path "/reviews/prod" %} class="active"{% endifequal %}><a href="/reviews/prod">Product Design Reviews</a></li>
+          <li{% ifequal request.path "/reviews/eng" %} class="active"{% endifequal %}><a href="/reviews/eng">Engineering Design Reviews</a></li>
+        </ul>
+      </div>
+      <div id="content" class="span10">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+    <footer>
+      &copy; 2012 Wandou Labs - Designed and built by <a href="http://wangjunyu.net">@junyu</a> - 
+      <a href="https://app.asana.com/0/1173583018917/1173583018917">反馈问题</a>
+      <br><img src="https://developers.google.com/appengine/images/appengine-noborder-120x30.gif" 
+alt="Powered by Google App Engine" />
+    </footer>
+    {% include "_modal_entry_new.html" %}
+    {% include "_modal_project_new.html" %}
+    <div id="calendar" class="modal hide">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>发布日历</h3>
+      </div>
+        <div class="modal-body">
+          <iframe src="https://www.google.com/calendar/embed?showTitle=0&amp;showCalendars=0&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src={{ calendar|urlencode }}&amp;color=%235F6B02&amp;ctz=Asia%2FShanghai" style=" border-width:0 " width="530px" height="390px" frameborder="0" scrolling="no"></iframe>
+          
+        </div>
+      </form>
+    </div>
+    
+  </div>
+
+  <!-- JavaScript at the bottom for fast page loading -->
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="/js/plugins.js"></script>
+  <script defer src="/js/mylibs/bootstrap.min.js"></script>
+  <script defer src="/js/script.js"></script>
+  <!-- end scripts-->
+  {% block scripts %}{% endblock %}
+	
+  <!-- Change UA-XXXXX-X to be your site's ID -->
+  <script>
+    window._gaq = [['_setAccount','UAXXXXXXXX1'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7 ]>
+    <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
+  
+</body>
+</html>

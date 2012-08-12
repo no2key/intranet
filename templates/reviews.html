@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% load filters %}
+{% load markup %}
+
+{% block title %}
+  {% ifequal type "prod" %}Product Design Reviews{% endifequal %}
+  {% ifequal type "eng" %}Engineering Design Reviews{% endifequal %}
+{% endblock %}
+
+{% block content %}
+<h2>
+  {% ifequal type "prod" %}Product Design Reviews{% endifequal %}
+  {% ifequal type "eng" %}Engineering Design Reviews{% endifequal %}
+</h2>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#required_entries" data-toggle="tab">尚未通过</a></li>
+  <li><a href="#approved_entries" data-toggle="tab">已批准</a></li>
+  <li><a href="#waived_entries" data-toggle="tab">已免去</a></li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="required_entries">
+    {% with required_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}    
+  </div>
+  <div class="tab-pane" id="approved_entries">
+    {% with approved_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+  <div class="tab-pane" id="waived_entries">
+    {% with waived_entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% load filters %}
+{% load markup %}
+
+{% block title %}项目总览{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+  <p>为了最大程度地让豌豆们所做的事情和自己的兴趣点 match，我们允许并鼓励大家换到更最感兴趣的项目。如果你希望换项目，只需要满足以下几点：</p>
+  <ol>
+    <li>在原项目中至少有全职 3 个月以上</li>
+    <li>要加入的项目有明确的人员需求</li>
+    <li>请提前 3 周给原项目的 Owner，新项目的 Owner，junyu / jackfeng 提出申请。</li>
+  </ol>
+  <p>对于有些项目人员相对饱和，而有些项目相对人员不足的情况。我们总体的原则是，希望这些人员不足的项目的 Owner 和成员通过努力把项目做的更好，更有吸引力，更有影响力，来吸引更多的人加入这些 project。除非有特殊情况，原则上我们不会主动调配项目人员。</p>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-status">状态</th>
+      <th class="col-name">名字</th>
+      <th class="col-owner">Owner</th>
+      <th class="col-fulltimers">主力成员</th>
+      <th class="col-plusoners">"+1"ers</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% spaceless %}
+    {% for project in all_projects %}
+    <tr class="entry">
+      <td>{{ project.status }}</td>
+      <td>
+        <h4>
+          <a href="/projects/{{ project.key }}">{{ project.name }}</a>
+        </h4>
+        <p>{{ project.notes }}</p>
+      </td>
+      <td>
+        {% for person in project.owner %}{% include "_a_person.html" %}&nbsp;{% endfor %}
+      </td>
+      <td>
+        {% for person in project.fulltimers %}{% include "_a_person.html" %}&nbsp;{% endfor %}
+      </td>
+      <td>
+        {% for person in project.plusoners %}{% include "_a_person.html" %}&nbsp;{% endfor %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">
+        没有项目。
+      </td>
+    </tr>
+    {% endfor %}
+    {% endspaceless %}
+  </tbody>
+</table>
+{% endblock %}

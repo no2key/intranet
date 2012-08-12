@@ -1,0 +1,70 @@
+
+1.0.13
+- Implement approval process
+- Improve default view to display detailed status of products
+- Add "in a month" timeframe
+- Add fields for product / eng design docs
+- Fix bug: Activities should order by time
+- Fix bug: Description editing broken
+
+1.0.14
+- Hide launched products by default
+- Fix bug: Products should order by date
+
+1.0.15
+- Allow products to be launched w/o approvals temporally 
+
+1.0.16
+- "All products" changed to "Launched products"
+- Product descriptions now have appropriate line breaks
+- Fix bug: Design Docs can't be leave blank while editing
+
+1.0.17
+- Fix index error
+
+1.0.18
+- Try to allow SDK download data from it.
+
+1.0.19
+- Could have team members to products besides designer / tl
+- Send email notifications of each update for designer / tl / team members
+- Add comments for each products
+- Add "All activities" page
+- Freeze table headers
+- A few visual tweaks
+
+1.0.20
+- Tweak emails
+
+1.0.21
+- Tweak emails: Add URL
+
+1.0.22
+- Tweak emails again: Move junyu to bcc and try to fix URL
+
+1.0.23
+- Add releases
+- Prettifier email notifications
+- Bug fix: Adjust column widths
+
+TODO:
+- User profiles
+- Add notifications back to product page
+- Add approval / launch reverts
+- Platform / effort page
+- Actual launch date
+- Original launch date
+- Checklists
+- My products
+- Automatic email alerts (overdue, launches ahead etc.)
+- 手机上的视图
+- Email 的批准
+- 删除功能
+- 定期邮件骚扰
+- 只看和自己有关系
+
+Test cases:
+- Add new product and go thru the process
+- Edit existed product
+- Add comments
+- Click around

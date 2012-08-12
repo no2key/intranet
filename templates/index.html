@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+{% if person.owns %}
+  <h2>{{ person.owns.name }} (You own this)</h2>
+  {% with person.owns.entries as entries %}
+    {% include "_table_entries.html" %}
+  {% endwith %}
+{% endif %}
+{% if person.fulltime %}
+  <h2>{{ person.fulltime.name }} (Your main project)</h2>
+  {% with person.fulltime.entries as entries %}
+    {% include "_table_entries.html" %}
+  {% endwith %}
+{% endif %}
+{% if person.plusone_projects %}
+  <h2>Your "+1"s</h2>
+  {% for project in person.plusone_projects %}
+    {% with project.entries as entries %}
+      {% include "_table_entries.html" %}
+    {% endwith %}
+  {% endfor %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,20 @@
+<div id="form-prod-design-review" class="modal hide">
+  <form action="/entries/{{ entry.key }}/review/prod" method="post">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">×</button>
+      <h3>Product Design Review 状态</h3>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-error">
+        <strong>请勿擅自修改!</strong> 
+         通常情况下，仅 {{ product_reviewer }} 有权修改此项目。如需 review，请访问 <a href="http://go.wandoujia.com/design-review">go.wandoujia.com/design-review</a> 登记。
+      </div>
+
+      {% with entry.prod_design_review as status %}{% include "_form_approval.html" %}{% endwith %}
+    </div>
+    <div class="modal-footer">
+      <button type="submit" data-loading-text="Saving..." class="btn btn-primary">保存</button>
+      <button class="btn" data-dismiss="modal">不敢改了</button>
+    </div>
+  </form>
+</div>

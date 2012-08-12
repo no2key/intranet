@@ -1,0 +1,56 @@
+#top {
+  position: absolute;
+  right: 20px;
+}
+#login .alert {
+  background: none;
+  border: none;
+  padding: 0;
+}
+.modal form {
+  margin: 0;
+}
+a button {
+  background: inherit;
+  border: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+small a {
+  color: inherit;
+}
+sup {
+  color: red;
+  font-weight: bold;
+}
+.col-status {
+  width: 3em;
+}
+.col-project {
+  width: 8em;
+}
+.col-pdr {
+  width: 3em;
+}
+.col-edr {
+  width: 3em;
+}
+.col-dueon {
+  width: 5em;
+}
+.hero-unit * { /* Allow markdown in hero-unit.*/
+  font-size: 18px;
+  line-height: 1.5;
+}
+.hero-unit h1 {
+  margin-bottom: 9px;
+}
+span.label {
+  cursor: pointer;
+}
+footer {
+  margin-top: 45px;
+  padding: 35px 0 36px;
+  border-top: 1px solid #e5e5e5;
+}

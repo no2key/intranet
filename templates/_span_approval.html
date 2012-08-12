@@ -1,0 +1,18 @@
+{% ifequal status "new" %}
+  <span class="label label-info" rel="tooltip" title="刚刚收到，还没有处理。">New</span>
+{% endifequal %}
+{% ifequal status "ack" %}
+  <span class="label" rel="tooltip" title="已收到文档，会尽快安排 review。">Ack</span>
+{% endifequal %}
+{% ifequal status "approved" %}
+  <span class="label label-success" rel="tooltip" title="已经过 review，没有发现重大问题，同意按此实施。">Approved</span>
+{% endifequal %}
+{% ifequal status "rejected" %}
+  <span class="label label-important" rel="tooltip" title="已经过 review，有重大问题，请修改后再次 review。">Rejected</span>
+{% endifequal %}
+{% ifequal status "waived" %}
+  <span class="label label-success" rel="tooltip" title="免去 review。">Waived</span> 
+{% endifequal %}
+{% ifequal status "missing" %}
+  <span class="label label-important" rel="tooltip" title="缺少设计文档">Missing</span>
+{% endifequal %}

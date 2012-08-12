@@ -1,0 +1,28 @@
+<div class="form-horizontal">
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="name">名字<sup>*</sup></label>
+      <div class="controls">
+        <input type="text" class="input-large" id="name" name="name" required value="{{ edit.name }}" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="notes">说明</label>
+      <div class="controls">
+        <textarea type="text" class="input-xlarge" id="notes" name="notes">{{ edit.notes|default:"" }}</textarea>
+        <p class="help-block">支持 Markdown 格式。</p>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="status">项目状态<sup>*</sup></label>
+      <div class="controls">
+        <select class="input-small" id="status" name="status" required>
+          <option></option>
+          {% for status in project_statuses %}
+          <option value="{{ status }}"{% if status == edit.status %} selected{% endif %}>{{ status|capfirst }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </fieldset>
+</div>

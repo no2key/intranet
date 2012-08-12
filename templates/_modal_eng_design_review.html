@@ -1,0 +1,21 @@
+<div id="form-eng-design-review" class="modal hide">
+  <form action="/entries/{{ entry.key }}/review/eng" method="post">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">×</button>
+      <h3>Engineering Design Review 状态</h3>
+    </div>
+    <div class="modal-body">
+
+      <div class="alert alert-error">
+        <strong>请勿擅自修改!</strong> 
+        通常情况下，仅 {{ engineering_reviewer }} 有权修改此项目。
+      </div>
+
+      {% with entry.eng_design_review as status %}{% include "_form_approval.html" %}{% endwith %}
+    </div>
+    <div class="modal-footer">
+      <button type="submit" data-loading-text="保存ing..." class="btn btn-primary">保存</button>
+      <button class="btn" data-dismiss="modal">不敢改了</button>
+    </div>
+  </form>
+</div>

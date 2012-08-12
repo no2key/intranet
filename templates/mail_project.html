@@ -1,0 +1,47 @@
+{% load filters %}
+<div style="color: #333;">
+{% with project.unmailed_stories as stories %}
+  <ul style=" line-height: 18px; list-style: none; margin: 0 0 9px; padding: 0">
+  {% for story in stories %}
+    <li style="line-height: 18px">
+      {% if story.type == "system" %}
+      <p style="margin: 0 0 9px">
+        <small style="font-size: 11px; color: #999;">
+        {% with story.created_by as person %}
+          <strong>{% include "_a_person.html" %}</strong>
+        {% endwith %}
+        {{ story.text|safe }}
+        {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
+        {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+        · {{ story.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}
+        </small>
+      </p>
+      {% else %}
+      <blockquote style="padding: 0 0 0 15px; margin: 0 0 18px; border-left: 5px solid #EEE;">
+        <p style="margin: 0; font-size: 16px; font-weight: 300; line-height: 22.5px;">{{ story.text }}</p>
+        <small style="display: block; line-height: 18px; color: #999;">
+          {% with story.created_by as person %}
+            <strong>{% include "_a_person.html" %}</strong>
+          {% endwith %}
+          {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
+          {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+          · {{ story.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}
+        </small>
+      </blockquote>
+      {% endif %}
+    </li>
+  {% empty %}
+  <div class="alert alert-info">No updates yet! Sorry!</div>
+  {% endfor %}
+  </ul>
+{% endwith %}
+
+<div class="hero-unit" style="background-color: #EEE; border-radius: 6px; line-height: 18px; margin-bottom: 30px; padding: 60px">
+  <h1 style="font-size: 60px; font-weight: bold; letter-spacing: -1px; line-height: 60px; margin: 0; text-rendering: optimizelegibility;">
+    {{ project.name }}
+  </h1>
+  <p style="font-size: 18px; font-weight: 200; line-height: 27px; margin-bottom: 9px;">
+    {{ project.notes }}
+  </p>
+</div>
+</div>

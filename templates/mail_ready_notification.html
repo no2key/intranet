@@ -1,0 +1,19 @@
+{% load markup %}
+<h3>发布附言</h3>
+{{ text|markdown }}
+<h3>发布内容</h3>
+<h4>[{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }})</h4>
+<blockquote>{{ entry.notes|markdown }}</blockquote>
+{% for relier in entry.reliers %}
+<ul>
+  <li>Product Design Doc: {{ entry.prod_design_doc }}</li>
+  <li>Engineering Design Doc: {{ entry.eng_design_doc }}</li>
+</ul>
+<h4>[{{ relier.project.name }}] {{ relier.name }} ({{ relier.impact }})</h4>
+<blockquote>{{ relier.notes }}</blockquote>
+<ul>
+  <li>Product Design Doc: {{ relier.prod_design_doc }}</li>
+  <li>Engineering Design Doc: {{ relier.eng_design_doc }}</li>
+</ul>
+{% endfor %}
+<p>详情请<a href="{{ base_url }}/entries/{{ entry.key }}">到此查看 &raquo;</a></p>
