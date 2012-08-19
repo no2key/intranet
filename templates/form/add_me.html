@@ -1,0 +1,15 @@
+
+<div class="btn-group">
+  <a class="btn btn-primary" data-toggle="modal" href="#modal-join-project-{{ person.id }}">
+    <i class="icon-plus icon-white"></i>
+    我要加入...
+  </a>
+  <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a data-toggle="modal" href="#modal-join-project">让其它人加入...</a></li>
+  </ul>
+</div>
+{% include "modal/join_project.html" with me=person %}
+{% include "modal/join_project.html" with person="" %}

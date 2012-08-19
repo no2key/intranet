@@ -1,0 +1,46 @@
+<div id="modal-join-project{% if person %}-{{ person.id }}{% endif %}" class="modal hide">
+  <form action="/projects/{{ project.key }}/members" method="post">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">×</button>
+      <h3>
+        {% if person %}
+        修改{% if me %}您{% else %} {{ person.given_name }} {{ person.family_name }} {% endif %}在 {{ project.name }} 中的角色
+        {% else %}
+        加入新成员
+        {% endif %}
+      </h3>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-info">
+        项目的所有通知，都会抄送 Owner、主力成员或 "+1"er。
+      </div>
+      {% if person %}
+        <input type="hidden" name="user_id" value="{{ person.id }}">
+      {% else %}
+        <label>成员</label>
+        {% include "input/person.html" %}
+      {% endif %}
+      <label>角色</label>
+      <label class="radio">
+        <input type="radio" name="role" value="owner" required>
+        <strong>Owner</strong>。项目负责人，项目的大事小事，不管是研发、产品、商务合作还是营销推广，都将由 Owner 负责。每个人只能担任一个项目的负责人。
+      </label>
+      <label class="radio">
+        <input type="radio" name="role" value="fulltimer" required>
+        <strong>主力成员</strong>。大部分时间将投入这个项目。每个人只能在一个项目内担任主力成员，加入此项目后，在其它项目中的主力成员角色将自动退出。
+      </label>
+      <label class="radio">
+        <input type="radio" name="role" value="plusoner" required>
+        <strong>"+1"er</strong>。在这个项目中扮演打酱油的角色，在有需要的时候过来帮忙。打酱油的项目数量不限。
+      </label>
+      <label class="radio">
+        <input type="radio" name="role" value="" required>
+        <strong>不加入</strong>。不加入这个项目。
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" data-loading-text="加入ing..." class="btn btn-primary">加入</button>
+      <button class="btn" data-dismiss="modal">不加了</button>
+    </div>
+  </form>
+</div>

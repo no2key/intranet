@@ -7,6 +7,7 @@
   border: none;
   padding: 0;
 }
+
 .modal form {
   margin: 0;
 }
@@ -24,8 +25,12 @@ sup {
   color: red;
   font-weight: bold;
 }
+/* tables */
 .col-status {
   width: 3em;
+}
+.col-name {
+  overflow: hidden;
 }
 .col-project {
   width: 8em;
@@ -39,6 +44,14 @@ sup {
 .col-dueon {
   width: 5em;
 }
+.snippet {
+  overflow: hidden;
+  width: 300px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Hero Unit */
 .hero-unit * { /* Allow markdown in hero-unit.*/
   font-size: 18px;
   line-height: 1.5;

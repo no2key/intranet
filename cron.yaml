@@ -2,11 +2,15 @@ cron:
 - description: send email updates
   url: /services/notification
   schedule: every 5 minutes synchronized
-  
+
 - description: sync to calendar
   url: /services/sync/calendar
   schedule: every 30 minutes synchronized
-  
+
+- description: sync users
+  url: /services/sync/users
+  schedule: every day 09:00
+
 - description: check delays
   url: /services/check/delays
   schedule: every day 08:00

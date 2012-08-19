@@ -58,7 +58,7 @@ class Project(BaseRequestHandler):
           "project": project,
           "active_entries": models.Entry.gql("WHERE project = :1 AND status IN ('new', 'in progress', 'ready') ORDER BY due_on", project.key()),
           "launched_entries": models.Entry.gql("WHERE project = :1 AND status = 'launched' ORDER BY due_on", project.key()),
-          "cancelled_entries": models.Entry.gql("WHERE project = :1 AND status = 'cancelled' ORDER BY due_on", project.key()) 
+          "cancelled_entries": models.Entry.gql("WHERE project = :1 AND status = 'cancelled' ORDER BY due_on", project.key()),
         }
         self.render("project.html", template_values)
 
@@ -87,14 +87,6 @@ class ProjectMembers(BaseRequestHandler):
         project = models.Project.get(key)
         update_role(self, person, project, role)
 
-class ProjectMember(BaseRequestHandler):
-    def post(self, key, user_id): # Update a project member
-        self.check_user()
-        role = decode(self.request.get("role"))
-        person = string_to_user(user_id)
-        project = models.Project.get(key)
-        update_role(self, person, project, role)
-
 class Entries(BaseRequestHandler):
     def get(self): # Show all entries
         self.check_user()
@@ -114,6 +106,7 @@ class Entries(BaseRequestHandler):
             entry.prod_design_review = "missing"
           if not entry.eng_design_doc:
             entry.eng_design_review = "missing"
+        entry.created_by = self.person
         entry.put()
         memcache.flush_all()
         new_story(self, "created the entry", entry=entry)
@@ -248,10 +241,10 @@ class EntryStatus(BaseRequestHandler):
               cc.append(notifier.email)
             email = models.Email(
               sender = "Launch Notifier <entry-%s@%s.appspotmail.com>" % (entry.key(), settings.APP_ID),
-              subject = decode(render_to_string("mail_ready_notification_subject.txt", values)),
+              subject = unicode(render_to_string("mail/ready_notification_subject.txt", values)),
               to = [db.Email("launch@wandoujia.com")],
               cc = list(set(cc)),
-              html = render_to_string("mail_ready_notification.html", values)
+              html = render_to_string("mail/ready_notification.html", values)
             )
             services.generate_email(email)
 
@@ -375,19 +368,23 @@ class SignupStep2(webapp2.RequestHandler):
       self.redirect('/')
 
 def get_entry_from_request(request):
+  if decode(request.get("type")) == "product":
+    dependency = models.Entry.get(decode(request.get("dependency")))
+    due_on = dependency.due_on
+  else:
+    due_on = iso_to_date(decode(request.get("due_on")))
   entry = models.Entry(
     name = decode(request.get("name")),
     notes = decode(request.get("notes")),
     impact = decode(request.get("impact")),
     project = models.Project.get(decode(request.get("project"))),
-    due_on = iso_to_date(decode(request.get("due_on"))),
+    due_on = due_on,
     type = decode(request.get("type")),
     prod_design_doc = decode(request.get("prod_design_doc")),
     eng_design_doc = decode(request.get("eng_design_doc"))
   )
   if entry.type == "product":
     entry.dependency = models.Entry.get(decode(request.get("dependency")))
-    entry.due_on = entry.dependency.due_on
   return entry
 
 def get_project_from_request(request):
@@ -473,12 +470,14 @@ def update_role(request, person, project, role):
       
     elif role == "fulltimer":
       # Remove other roles.
+      # One could only be owner or fulltimer in one project.
       person.owns = None
       if project.key() in person.plusones:
         person.plusones.remove(project.key())
       # Create new role
       person.fulltime = project
       new_story(request, "added <strong>%s</strong> as <em>fulltimer</em>" % person.id, project=project, person=person)
+
     elif role == "plusoner":
       # If already has other roles, remove that.
       if person.fulltime and (person.fulltime.key() == project.key()):
@@ -488,6 +487,15 @@ def update_role(request, person, project, role):
       # Create new role
       person.plusones.append(project.key())
       new_story(request, "added <strong>%s</strong> as <em>\"+1\"er</em>" % person.id, project=project, person=person)
+    else:
+      # Remove all roles from this project.
+      if person.fulltime and (person.fulltime.key() == project.key()):
+        person.fulltime = None
+      if person.owns and (person.owns.key() == project.key()):
+        person.owns = None
+      if project.key() in person.plusones:
+        person.plusones.remove(project.key())
+      new_story(request, "removed <strong>%s</strong> from this project" % person.id, project=project, person=person)
     person.put()
     memcache.flush_all()
     request.redirect('/projects/' + str(project.key()))
@@ -513,6 +521,7 @@ def new_story(request, text, type = "system", entry = None, project = None, pers
   story.put()
   if story.entry:
     story.entry.mailed = False
+    story.entry.calendar_synced = False
     story.entry.put()
   if story.project:
     story.project.mailed = False

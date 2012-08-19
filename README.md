@@ -1,6 +1,8 @@
 This is the code base for wandoulabs.com.
 
-To deploy your own version, rename app-sample.yaml to app.yaml, settings-sample.py to setting.py and make necessary edits.
+To deploy your own version, rename `app-sample.yaml` to `app.yaml`, `settings-sample.py` to `setting.py` and make necessary edits.
+
+## URL structure
 
 - GET `entries`
 - POST `entries`
@@ -17,5 +19,4 @@ To deploy your own version, rename app-sample.yaml to app.yaml, settings-sample.
 - GET `projects/:id`
 - POST `projects/:id`
 - POST `projects/:id/members`
-- POST `projects/:id/members/:user`
 - GET `stories`

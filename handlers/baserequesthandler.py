@@ -34,9 +34,15 @@ class BaseRequestHandler(webapp2.RequestHandler):
           self.redirect('/signup/step1')
         
     def render(self, template_name, template_values={}, to_string=False):
+        # Detect Chrome
+        chrome = False
+        uastring = self.request.headers.get('user_agent')
+        if "Chrome" in uastring:
+          chrome = True
         # Preset values for the template
         values = {
           'request': self.request,
+          'chrome': chrome,
           'person': self.person,
           'impacts': settings.IMPACTS,
           'project_statuses': settings.PROJECT_STATUSES,

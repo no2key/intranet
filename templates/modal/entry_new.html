@@ -1,11 +1,11 @@
-<div id="form-entry-new" class="modal hide">
+<div id="modal-entry-new" class="modal hide">
   <form action="/entries" method="post">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal">×</button>
       <h3>登记新发布</h3>
     </div>
     <div class="modal-body">
-      {% include "_form_entry.html" %}
+      {% include "form/entry.html" %}
     </div>
     <div class="modal-footer">
       <button type="submit" data-loading-text="登记ing..." class="btn btn-primary">登记</button>

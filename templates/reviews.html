@@ -21,17 +21,17 @@
 <div class="tab-content">
   <div class="tab-pane active" id="required_entries">
     {% with required_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}    
   </div>
   <div class="tab-pane" id="approved_entries">
     {% with approved_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}
   </div>
   <div class="tab-pane" id="waived_entries">
     {% with waived_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}
   </div>
 </div>

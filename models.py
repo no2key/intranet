@@ -39,8 +39,50 @@ class Project(db.Model):
         notifiers.extend(self.fulltimers)
         notifiers.extend(self.plusoners)
         return list(set(notifiers))
+
+class Person(db.Model):
+    email = db.EmailProperty()
+    id = db.StringProperty()
+    gaia = db.UserProperty()
+    given_name = db.StringProperty()
+    family_name = db.StringProperty()
+    owns = db.ReferenceProperty(Project, collection_name="owner")
+    fulltime = db.ReferenceProperty(Project, collection_name = "fulltimers")
+    # Could only fulltime on ONE project
+    plusones = db.ListProperty(db.Key) # +1 a project
+    date_joined = db.DateTimeProperty(auto_now_add=True)
+    date_lastlogin = db.DateTimeProperty(auto_now_add=True)  # TODO
+    date_lastactivity = db.DateTimeProperty(auto_now_add=True)  # TODO
+    is_setup = db.BooleanProperty(default=False)
+    suspended = db.BooleanProperty(default=False)
+    
+    @property
+    def projects(self):
+      projects = []
+      projects.extend(self.owns)
+      projects.extend(self.fulltime)
+      projects.extend(db.get(self.plusones))
+      return list(set(projects))
+      
+    @property
+    def entries(self):
+      return Entry.gql("WHERE notifiers = :1", self)
+    
+    @property
+    def plusone_projects(self):
+      return db.get(self.plusones)
+      
+    @staticmethod
+    def from_user(user):
+        user_name = user.email().split('@')[0]
+        person = Person().get_by_key_name(user_name)
+        return person
         
-          
+    @staticmethod
+    def from_email(email):
+        user_id = email.split('@')[0]
+        return Person().get_by_key_name(user_id)
+
 class Entry(db.Model):
     # User fill-in properties
     name = db.StringProperty(required=True)
@@ -69,14 +111,16 @@ class Entry(db.Model):
     # For "product"
     dependency = db.SelfReferenceProperty(collection_name="reliers")
     # For "platform", this will be filled in
-    due_on = db.DateProperty()
+    due_on = db.DateProperty(required=True)
     type = db.StringProperty(choices=set(["platform", "product"]))
     
     # Automatic properties
     launched_at = db.DateTimeProperty()
     created_at = db.DateTimeProperty(auto_now_add=True)
+    created_by = db.ReferenceProperty(Person, collection_name="creates")
     modified_at = db.DateTimeProperty(auto_now=True)
     mailed = db.BooleanProperty(default=False)
+    calendar_synced = db.BooleanProperty(default=False)
     calendar_edit_uri = db.LinkProperty()
     calendar_view_uri = db.LinkProperty()
     
@@ -125,49 +169,6 @@ class Entry(db.Model):
       else:
         return False
 
-class Person(db.Model):
-    email = db.EmailProperty()
-    id = db.StringProperty()
-    gaia = db.UserProperty()
-    given_name = db.StringProperty()
-    family_name = db.StringProperty()
-    owns = db.ReferenceProperty(Project, collection_name="owner")
-    fulltime = db.ReferenceProperty(Project, collection_name = "fulltimers")
-    # Could only fulltime on ONE project
-    plusones = db.ListProperty(db.Key) # +1 a project
-    date_joined = db.DateTimeProperty(auto_now_add=True)
-    date_lastlogin = db.DateTimeProperty(auto_now_add=True)  # TODO
-    date_lastactivity = db.DateTimeProperty(auto_now_add=True)  # TODO
-    is_setup = db.BooleanProperty(default=False)
-    suspended = db.BooleanProperty(default=False)
-    
-    @property
-    def projects(self):
-      projects = []
-      projects.extend(self.owns)
-      projects.extend(self.fulltime)
-      projects.extend(db.get(self.plusones))
-      return list(set(projects))
-      
-    @property
-    def entries(self):
-      return Entry.gql("WHERE notifiers = :1", self)
-    
-    @property
-    def plusone_projects(self):
-      return db.get(self.plusones)
-      
-    @staticmethod
-    def from_user(user):
-        user_name = user.email().split('@')[0]
-        person = Person().get_by_key_name(user_name)
-        return person
-        
-    @staticmethod
-    def from_email(email):
-        user_id = email.split('@')[0]
-        return Person().get_by_key_name(user_id)
-
 class Story(db.Model):
     type = db.StringProperty(choices=set(["system", "comment"]))
     text = db.TextProperty(required=True)
@@ -184,6 +185,7 @@ class Email(db.Model):
     sender = db.EmailProperty(required=True)
     to = db.ListProperty(db.Email, required=True)
     cc = db.ListProperty(db.Email)
+    reference = db.StringProperty()
     subject = db.StringProperty(required=True)
     html = db.TextProperty(required=True)
     

@@ -7,7 +7,7 @@ import webapp2
 import datetime
 import time
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings' # TODO: Move to app.yaml
 
 """
 Services that are accessible to admin only (eg. cron).
@@ -50,8 +50,8 @@ class Notifications(webapp2.RequestHandler):
           sender = "Launch Notifier <entry-%s@%s.appspotmail.com>" % (entry.key(), settings.APP_ID),
           subject = "[%s] %s (%s) - %s" % (entry.project.name, entry.name, entry.impact, entry.status.upper()),
           to = list(set(to)),
-          html = render_to_string("mail_entry.html", values),
-          headers = {"References": "entry-%s" % entry.key()} # Make threading works in Gmail
+          html = render_to_string("mail/entry.html", values),
+          reference = "entry-%s" % entry.key()
         )
         generate_email(email)
         entry.mailed = True
@@ -59,55 +59,38 @@ class Notifications(webapp2.RequestHandler):
         for story in entry.unmailed_stories:
           story.mailed = True
           story.put()
-    '''# Generate emails for remaining entries which might be tight to a project.
-    projects = models.Project.all().filter("mailed", False)
-    for project in projects:
-      if project.unmailed_stories:
-        to = []      
-        for notifier in project.notifiers:
-          to.append(notifier.email)
-        if to:
-          values = {"project": project}
-          email = models.Email(
-            sender = "Launch Notifier <project-%s@%s.appspotmail.com>" % (project.key(), settings.APP_ID),
-            subject = "Updates to [%s]" % project.name,
-            to = list(set(to)),
-            html = render_to_string("mail_project.html", values),
-            headers = {"References": "project-%s" % project.key()} # Make threading works in Gmail
-          )
-          generate_email(email)
-          project.mailed = True
-          project.put()
-          for story in project.unmailed_stories:
-            story.mailed = True
-            story.put()'''
-
+      else:
+        logging.info("No project members for entry %s." % entry.name)
 
 class Email(webapp2.RequestHandler):
   def post(self, key):
       """Worker that runs in the 'background'"""
-      # Get the object from the database
-      email = models.Email.get(key)
-
-      # Construct a appengine.api.mail object
-      message = mail.EmailMessage()
-      message.sender = email.sender
       if settings.DEBUG is not True:
-        # If not in debug mode, then really send emails
+      # If not in debug mode, then really send emails
+      # Get the object from the database
+        email = models.Email.get(key)
+
+        # Construct a appengine.api.mail object
+        message = mail.EmailMessage()
+        message.sender = email.sender
         message.to = email.to
-      message.bcc = settings.ADMINS
-      message.subject = email.subject
-      logging.info("Message sent to: %s" % message.to)
+        message.bcc = settings.ADMINS
+        message.subject = email.subject
+        message.reply_to = email.sender
+        message.headers = {
+            "References": email.reference # Make threading works in Gmail
+        } 
+        logging.info("Message sent to: %s" % message.to)
 
-      # Set text and html body
-      message.html = email.html
+        # Set text and html body
+        message.html = email.html
 
-      # Send. Important: Sometimes emails fail to send, which will throw an
-      # exception and end the function there. Next round tries again.
-      message.send()
+        # Send. Important: Sometimes emails fail to send, which will throw an
+        # exception and end the function there. Next round tries again.
+        message.send()
 
-      # Now the message was sent and we can safely delete it.
-      email.delete()
+        # Now the message was sent and we can safely delete it.
+        email.delete()
 
 class IncomingMail(InboundMailHandler):
   def receive(self, message):
@@ -116,6 +99,9 @@ class IncomingMail(InboundMailHandler):
       logging.info("Received a message from: " + message.sender)
       to_p = re.compile(r'(?<=entry-)(.*?)(?=@)') # TODO: And post-fixs
       to_m = to_p.search(message.to)
+      if not to_m:
+        logging.info("No valid email address in 'to'. Try search 'cc'.")
+        to_m = to_p.search(message.cc)
       if to_m:
         key = to_m.group()
         entry = models.Entry.get(key)
@@ -125,8 +111,10 @@ class IncomingMail(InboundMailHandler):
           for content_type, body in plaintext_bodies:
             text = text + body.decode()
           # So we get texts.
-          # TODO: Get rid of quotes
-          from_p = re.compile(r'(?<=\<)(.*?)(?=@)')
+          logging.info("Original texts: \n" + text)
+          text= remove_quotes(text) # Remove quotes.
+          logging.info("Clean texts: \n" + text)          
+          from_p = re.compile(r'(?<=(\<))(.*?)(?=@' + settings.DOMAIN + ')') # TODO: Bug: pure email address can't match.
           from_m = from_p.search(message.sender)
           if from_m:
             id = from_m.group()
@@ -139,57 +127,85 @@ class IncomingMail(InboundMailHandler):
         else:
           logging.error("Email delivery failed: Can't find the entry")
       else:
-        logging.error("Email delivery failed: No valid email address.")
+        logging.error("Email delivery failed: No valid email address found.")
 
 class SyncCalendar(webapp2.RequestHandler):
-    def get(self):
-        client = gdata.calendar.client.CalendarClient(domain=settings.DOMAIN)
-        client.ssl = True
-        client.debug = True
-        access_token_key = 'access_token_%s' % settings.ADMINS[0]
-        client.auth_token = gdata.gauth.ae_load(access_token_key)
-        calendar_id = settings.CALENDAR
-        visibility = 'private'
-        projection = 'full'
-        feed_uri = client.GetCalendarEventFeedUri(calendar=calendar_id, visibility=visibility, projection=projection)
-        logging.info("Google Calendar Feed URI: " + str(feed_uri))
-        feed = client.GetCalendarEventFeed(uri = feed_uri)
-        self.response.out.write('Events on Primary Calendar: %s' % feed.title.text)
-        for i, an_event in enumerate(feed.entry):
-          self.response.out.write('\t%s. %s' % (i, an_event.title.text))
+  def get(self):
+    entries = models.Entry.all().filter("calendar_synced", False)
+    for entry in entries:
+      taskqueue.add(url="/services/sync/calendar/%s" % entry.key())
+      self.response.out.write("Entry %s waiting to be synced to calenadr.<br>" % entry.name)
+      # TODO: Sync event followers to Google Calendar
+
         
-        all_entries = models.Entry.all()
-        for entry in all_entries:
-          if entry.status == "cancelled":
-            # Remove entry from Calendar
-            if entry.calendar_edit_uri:
-              event = client.GetEventEntry(uri = entry.calendar_edit_uri)
-              client.Delete(event)
-              logging.info("Event Deleted: " + event.id.text)
-              self.response.out.write("Event Deleted: %s<br>" % event.id.text)
-          else:
-            # Create / update entry
-            if entry.calendar_edit_uri:
-              event = client.GetEventEntry(uri = entry.calendar_edit_uri)
-              event.when = []
-            else:
-              event = gdata.calendar.data.CalendarEventEntry()
-            event.title = atom.data.Title(text="[%s] %s (%s) - %s" % (entry.project.name, entry.name, entry.impact, entry.status.upper()))
-            event.content = atom.data.Content(text=entry.notes)
-            due_on = entry.due_on.isoformat()
-            event.when.append(gdata.calendar.data.When(start=due_on))
-            if entry.calendar_edit_uri:
-              client.Update(event)
-              logging.info("Event Updated: " + event.id.text)
-              self.response.out.write("Event Updated: %s<br>" % event.id.text)
-            else:
-              new_event = client.InsertEvent(event, insert_uri=feed_uri)
-              entry.calendar_edit_uri = new_event.GetEditLink().href
-              entry.calendar_view_uri = new_event.GetHtmlLink().href
-              entry.put()
-              logging.info("Event Created: " + new_event.id.text)
-              self.response.out.write("Event created: %s<br>" % new_event.id.text)
-          # TODO: Sync event followers to Google Calendar
+class SyncCalendarEvent(webapp2.RequestHandler):
+  def post(self, key):
+      """Worker that runs in the 'background'"""
+      # Get the object from the database
+      client = gdata.calendar.client.CalendarClient(domain=settings.DOMAIN)
+      client.ssl = True
+      client.debug = True
+      access_token_key = 'access_token_%s' % settings.ADMINS[0]
+      client.auth_token = gdata.gauth.ae_load(access_token_key)
+      calendar_id = settings.CALENDAR
+      feed_uri = client.GetCalendarEventFeedUri(
+          calendar=calendar_id, visibility='private', projection='full')
+
+      entry = models.Entry.get(key)
+      if entry.status == "cancelled":
+        # Remove entry from Calendar
+        if entry.calendar_edit_uri:
+          event = client.GetEventEntry(uri = entry.calendar_edit_uri)
+          client.Delete(event)
+          logging.info("Event Deleted: " + event.id.text)
+          self.response.out.write("Event Deleted: %s<br>" % event.id.text)
+      else:
+        # Create / update entry
+        if entry.calendar_edit_uri: # Update existed entry
+          event = client.GetEventEntry(uri = entry.calendar_edit_uri)
+          event.when = []
+        else: # Create new entry
+          event = gdata.calendar.data.CalendarEventEntry()
+        event.title = atom.data.Title(text="[%s] %s (%s) - %s" % (entry.project.name, entry.name, entry.impact, entry.status.upper()))
+        event.content = atom.data.Content(text=entry.notes)
+        due_on = entry.due_on.isoformat()
+        event.when.append(gdata.calendar.data.When(start=due_on))
+        if entry.calendar_edit_uri:
+          client.Update(event)
+          logging.info("Event Updated: " + event.id.text)
+        else:
+          new_event = client.InsertEvent(event, insert_uri=feed_uri)
+          entry.calendar_edit_uri = new_event.GetEditLink().href
+          entry.calendar_view_uri = new_event.GetHtmlLink().href
+          entry.put()
+          logging.info("Event Created: " + new_event.id.text)
+
+class SyncCalendarReset(webapp2.RequestHandler):
+  def get(self):
+    # Reset sync status.
+    entries = models.Entry.all()
+    for entry in entries:
+      entry.calendar_synced = False
+      entry.calendar_edit_uri = None
+      entry.calendar_view_uri = None
+      entry.put()
+      self.response.out.write("Entry %s reset.<br>" % entry.name)
+    self.response.out.write("All entries reset.<br>")
+
+class SyncCalendarClean(webapp2.RequestHandler):
+  def get(self):
+    # Clean calendar
+    client = gdata.calendar.client.CalendarClient(domain=settings.DOMAIN)
+    client.ssl = True
+    client.debug = True
+    access_token_key = 'access_token_%s' % settings.ADMINS[0]
+    client.auth_token = gdata.gauth.ae_load(access_token_key)
+    calendar_id = settings.CALENDAR
+    feed_uri = client.GetCalendarEventFeedUri(
+        calendar=calendar_id, visibility='private', projection='full')
+    feed = client.GetCalendarEventFeed(uri = feed_uri)
+    for i, an_event in enumerate(feed.entry):
+      client.Delete(an_event)
 
 class SyncUsers(webapp2.RequestHandler):
     def get(self):
@@ -249,10 +265,71 @@ def generate_email(email):
   email.put()
   logging.info("Created an email.")
   taskqueue.add(url="/services/email/%s" % email.key())
-  
+
+def remove_quotes(text):
+  # http://stackoverflow.com/questions/2385347/how-to-remove-the-quoted-text-from-an-email-and-only-show-the-new-text
+  # general spacers for time and date
+  spacers = "[\\s,/\\.\\-]"
+  # matches times
+  timePattern = "(?:[0-2])?[0-9]:[0-5][0-9](?::[0-5][0-9])?(?:(?:\\s)?[AP]M)?"
+  # matches day of the week
+  dayPattern = "(?:(?:Mon(?:day)?)|(?:Tue(?:sday)?)|(?:Wed(?:nesday)?)|(?:Thu(?:rsday)?)|(?:Fri(?:day)?)|(?:Sat(?:urday)?)|(?:Sun(?:day)?))"
+  # matches day of the month (number and st, nd, rd, th)
+  dayOfMonthPattern = "[0-3]?[0-9]" + spacers + "*(?:(?:th)|(?:st)|(?:nd)|(?:rd))?"
+  # matches months (numeric and text)
+  monthPattern = ("(?:(?:Jan(?:uary)?)|(?:Feb(?:uary)?)|(?:Mar(?:ch)?)|(?:Apr(?:il)?)|(?:May)|(?:Jun(?:e)?)|(?:Jul(?:y)?)" +
+                  "|(?:Aug(?:ust)?)|(?:Sep(?:tember)?)|(?:Oct(?:ober)?)|(?:Nov(?:ember)?)|(?:Dec(?:ember)?)|(?:[0-1]?[0-9]))")
+  # matches years (only 1000's and 2000's, because we are matching emails)
+  yearPattern = "(?:[1-2]?[0-9])[0-9][0-9]";
+  # matches a full date
+  datePattern = ("(?:" + dayPattern + spacers + "+)?(?:(?:" + dayOfMonthPattern + spacers + "+" + monthPattern + ")|" +
+                 "(?:" + monthPattern + spacers + "+" + dayOfMonthPattern + "))" +
+                 spacers + "+" + yearPattern)
+
+  # matches a date and time combo (in either order)
+  dateTimePattern = ("(?:" + datePattern + "[\\s,]*(?:(?:at)|(?:@))?\\s*" + timePattern + ")|" +
+                     "(?:" + timePattern + "[\\s,]*(?:on)?\\s*"+ datePattern + ")")
+
+  # matches a leading line such as
+  # ----Original Message----
+  # or simply
+  # ------------------------
+  leadInLine = "-+\\s*(?:Original(?:\\sMessage)?)?\\s*-+\n"
+  # matches a header line indicating the date
+  dateLine = "(?:(?:date)|(?:sent)|(?:time)):\\s*"+ dateTimePattern + ".*\n"
+  # matches a subject or address line
+  subjectOrAddressLine = "((?:from)|(?:subject)|(?:b?cc)|(?:to))|:.*\n"
+  # matches gmail style quoted text beginning, i.e.
+  # On Mon Jun 7, 2010 at 8:50 PM, Simon wrote:
+  gmailQuotedTextBeginning = "(On\\s+" + dateTimePattern + ".*wrote:\n)"
+
+  # matches the start of a quoted section of an email
+  rule1 = re.compile(r"(?i)(?:(?:" + leadInLine + ")?" +
+                                    "(?:(?:" +subjectOrAddressLine + ")|(?:" + dateLine + ")){2,6})|(?:" +
+                                    gmailQuotedTextBeginning + ")"
+                                    );
+  rule2 = re.compile(r"^\>.*", re.MULTILINE)
+  rule3 = re.compile(r"^Sent from", re.MULTILINE)
+  match = rule1.search(text)
+  if match:
+    text = text[:match.start()]
+    logging.info("Rule 1 matched.")
+  match = rule2.search(text)
+  if match:
+    text = text[:match.start()]
+    logging.info("Rule 2 matched.")
+  match = rule3.search(text)
+  if match:
+    text = text[:match.start()]
+    logging.info("Rule 3 matched.")
+  return text
+
 urls = [
     (r'/services/notification', Notifications),
     (r'/services/email/(.*)', Email),
+    (r'/services/sync/calendar/clean', SyncCalendarClean),
+    (r'/services/sync/calendar/reset', SyncCalendarReset),
+    (r'/services/sync/calendar/(.*)', SyncCalendarEvent),
     (r'/services/sync/calendar', SyncCalendar),
     (r'/services/sync/users', SyncUsers),
     (r'/services/sync/profiles', SyncProfiles),

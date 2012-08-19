@@ -8,11 +8,11 @@
     <p>
       <small>
       {% with story.created_by as person %}
-        <strong>{% include "_a_person.html" %}</strong>
+        <strong>{% include "a/person.html" %}</strong>
       {% endwith %}
       {{ story.text|safe }}
-      {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
-      {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+      {% if story.project %}· {% with story.project as project %}{% include "a/project.html" %}{% endwith %}{% endif %}
+      {% if story.entry %}· {% with story.entry as entry %}{% include "a/entry.html" %}{% endwith %}{% endif %}
       · {{ story.created_at|timesince }} ago
       </small>
     </p>
@@ -21,10 +21,10 @@
       <p>{{ story.text|markdown }}</p>
       <small>
         {% with story.created_by as person %}
-          <strong>{% include "_a_person.html" %}</strong>
+          <strong>{% include "a/person.html" %}</strong>
         {% endwith %}
-        {% if story.project %}· {% with story.project as project %}{% include "_a_project.html" %}{% endwith %}{% endif %}
-        {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+        {% if story.project %}· {% with story.project as project %}{% include "a/project.html" %}{% endwith %}{% endif %}
+        {% if story.entry %}· {% with story.entry as entry %}{% include "a/entry.html" %}{% endwith %}{% endif %}
         · {{ story.created_at|timesince }} ago
       </small>
     </blockquote>

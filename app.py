@@ -4,13 +4,12 @@ import webapp2
 import handlers
 import sys
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings' # TODO: Move to app.yaml
 sys.path.append(os.path.join(os.path.dirname(__file__), ''))
 
 urls = [
     (r'/', handlers.Main),
     (r'/projects', handlers.Projects),
-    (r'/projects/(.*)/members/(.*)', handlers.ProjectMember),
     (r'/projects/(.*)/members', handlers.ProjectMembers),
     (r'/projects/(.*)', handlers.Project),
     (r'/entries', handlers.Entries),

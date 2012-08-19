@@ -1,0 +1,9 @@
+<ul class="unstyled">
+  {% for person in persons %}
+  <li>
+    {% include "a/person.html" %}
+    <a href="#modal-join-project-{{ person.id }}" data-toggle="modal"><i class="icon-pencil"></i></a>
+    {% include "modal/join_project.html" %}
+  </li>
+  {% endfor %}
+</ul>

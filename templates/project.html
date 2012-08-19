@@ -19,74 +19,65 @@
         <dt>Owner</dt>
         <dd>
           {% with project.owner as persons %}
-          {% include "_ul_persons_on_project_page.html" %}
+          {% include "ul/members.html" %}
           {% endwith %}
         </dd>
         <dt>主力成员</dt>
         <dd>
           {% with project.fulltimers as persons %}
-          {% include "_ul_persons_on_project_page.html" %}
+          {% include "ul/members.html" %}
           {% endwith %}
         </dd>
         <dt>"+1"ers</dt>
         <dd>
-          <ul class="unstyled">
-            {% with project.plusoners as persons %}
-            {% include "_ul_persons_on_project_page.html" %}
-            {% endwith %}
-          </ul>
+          {% with project.plusoners as persons %}
+          {% include "ul/members.html" %}
+          {% endwith %}
         </dd>
       </dl>
-      {% include "_form_add_me_button.html" %}
-      {% spaceless %}
-      <form action="/projects/{{ project.key }}/members" method="post" class="form-inline">
-        <div class="btn-group">
-          <div class="input-prepend input-append">
-            <span class="add-on"><i class="icon-user"></i></span>
-            {% include "_input_person.html" %}
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-              <i class="icon-plus"></i>
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a href="#"><button type="submit" name="role" value="fulltimer">添加为主力成员</button></a></li>
-              <li><a href="#"><button type="submit" name="role" value="plusoner">添加为 "+1"er</button></a></li>
-              <li class="divider"></li>
-              <li><a href="#"><button type="submit" name="role" value="owner">添加为 Owner</button></a></li>
-            </ul>
-          </div>
-        </div>
-      </form>
-      {% endspaceless %}
+      {% include "form/add_me.html" %}
     </div>
   </div>
 </div>
 <h3>发布</h3>
 <ul class="nav nav-tabs">
-  <li class="active"><a href="#active_entries" data-toggle="tab">尚未发布</a></li>
-  <li><a href="#launched_entries" data-toggle="tab">已发布</a></li>
-  <li><a href="#cancelled_entries" data-toggle="tab">已取消</a></li>
+  <li class="active">
+    <a href="#active_entries" data-toggle="tab">尚未发布
+      <span class="badge">{{ active_entries.count }}</span>
+      {# active_entries is a query object #}
+    </a>
+  </li>
+  <li>
+    <a href="#launched_entries" data-toggle="tab">已发布
+      <span class="badge">{{ launched_entries.count }}</span>
+    </a>
+  </li>
+  <li>
+    <a href="#cancelled_entries" data-toggle="tab">已取消
+      <span class="badge">{{ cancelled_entries.count }}</span>
+    </a>
+  </li>
 </ul>
 <div class="tab-content">
   <div class="tab-pane active" id="active_entries">
     {% with active_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}    
   </div>
   <div class="tab-pane" id="launched_entries">
     {% with launched_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}
   </div>
   <div class="tab-pane" id="cancelled_entries">
     {% with cancelled_entries as entries %}
-      {% include "_table_entries.html" %}
+      {% include "table/entries.html" %}
     {% endwith %}
   </div>
 </div>
 <h3>动态</h3>
 {% with project.stories as stories %}
-  {% include "_ul_stories.html" %}
+  {% include "ul/stories.html" %}
 {% endwith %}
-{% include "_modal_project_edit.html" %}
+{% include "modal/project_edit.html" %}
 {% endblock %}

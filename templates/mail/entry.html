@@ -17,7 +17,7 @@
             <a href="{{ base_url }}projects/{{ project.key }}">{{ project.name }}</a>
           {% endwith %}
         {% endif %}
-        {% if story.entry %}· {% with story.entry as entry %}{% include "_a_entry.html" %}{% endwith %}{% endif %}
+        {% if story.entry %}· <a href="{{ base_url }}entries/{{ story.entry.key }}">{{ story.entry.name }}</a>{% endif %}
         · {{ story.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}
         </small>
       </p>
@@ -47,6 +47,10 @@
 {% endwith %}
 
 <div class="hero-unit" style="background-color: #EEE; border-radius: 6px; line-height: 18px; margin-bottom: 30px; padding: 60px">
+  <p style="font-size: 18px; line-height: 27px">
+    <a href="{{ base_url }}">所有发布</a> &raquo;
+    <a href="{{ base_url }}projects/{{ entry.project.key }}">{{ entry.project.name }}</a> &raquo;
+  </p>
   <h1 style="font-size: 60px; font-weight: bold; letter-spacing: -1px; line-height: 60px; margin: 0; text-rendering: optimizelegibility;">
     {{ entry.name }}
   </h1>
@@ -62,13 +66,14 @@
     {{ entry.notes|markdown }}
   </div>
   <p style="font-size: 18px; font-weight: 200; line-height: 27px; margin-bottom: 9px;">
-    Launch on <strong>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</strong>
+    预定在 <strong>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</strong>
     {% if entry.type == "product" %}
-    , shipped by {% with entry.dependency as entry %}<a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>{% endwith %}
+    , 由 {% with entry.dependency as entry %}<a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>{% endwith %} 发布
     {% else %}
+      发布
       {% for entry in entry.relier %}
         {% if forloop.first %}
-        , also ships
+        , 并同时发布
         {% endif %}
         <a href="{{ base_url }}/entries/{{ entry.key }}">{{ entry.name }}</a>
         {% if not forloop.last %},{% endif %}
@@ -78,4 +83,4 @@
   </p>
 </div>
 </div>
-<p>Reply to this email to comment, <a href="{{ base_url }}/entries/{{ entry.key }}">view and edit</a> in Wandou Labs, or follow.</p>
+<p>回复邮件可直接评论, 或者<a href="{{ base_url }}/entries/{{ entry.key }}">在 wandoulabs.com</a> 上查看。</p>
