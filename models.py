@@ -143,18 +143,38 @@ class Entry(db.Model):
     @property
     def ready(self):
       for relier in self.reliers:
-        if not ((relier.prod_design_review == "approved" or
-                 relier.prod_design_review == "waived") and
-                (relier.eng_design_review == "approved" or
-                 relier.eng_design_review == "waived")):
+        if not ((relier.prod_design_review_status == "approved" or
+                 relier.prod_design_review_status == "waived") and
+                (relier.eng_design_review_status == "approved" or
+                 relier.eng_design_review_status == "waived")):
           return False
-      if not ((self.prod_design_review == "approved" or
-               self.prod_design_review == "waived") and
-              (self.eng_design_review == "approved" or
-               self.eng_design_review == "waived")):
+      if not ((self.prod_design_review_status == "approved" or
+               self.prod_design_review_status == "waived") and
+              (self.eng_design_review_status == "approved" or
+               self.eng_design_review_status == "waived")):
         return False
       return True
     
+    @property
+    def prod_design_review_status(self): # Used for display
+      if self.impact in ["beta", "dogfood", "experiment"]:
+        return "waived"
+      else:
+        if not self.prod_design_doc:
+          return "missing"
+        else:
+          return self.prod_design_review
+
+    @property
+    def eng_design_review_status(self): # Used for display
+      if self.impact in ["beta", "dogfood", "experiment"]:
+        return "waived"
+      else:
+        if not self.eng_design_doc:
+          return "missing"
+        else:
+          return self.eng_design_review
+
     @property
     def active(self):
       if (self.status == "launched" or self.status == "cancelled"):

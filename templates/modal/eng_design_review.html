@@ -5,10 +5,9 @@
       <h3>Engineering Design Review 状态</h3>
     </div>
     <div class="modal-body">
-
       <div class="alert alert-error">
         <strong>请勿擅自修改!</strong> 
-        除非紧急情况，仅 {{ engineering_reviewer }} 有权修改此项目。
+        非紧急情况，仅 {{ engineering_reviewer }} 有权修改此项目。在紧急情况下，可自行修改。
       </div>
 
       {% with entry.eng_design_review as status %}{% include "form/review.html" %}{% endwith %}

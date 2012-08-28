@@ -7,7 +7,7 @@
     <div class="modal-body">
       <div class="alert alert-error">
         <strong>请勿擅自修改!</strong> 
-         除非紧急情况，仅 {{ product_reviewer }} 有权修改此项目。如需 review，请访问 <a href="http://go.wandoujia.com/design-review">go.wandoujia.com/design-review</a> 登记。
+         非紧急情况，仅 {{ product_reviewer }} 有权修改此项目。在紧急情况下，可自行修改。如需 review，请访问 <a href="http://go.wandoujia.com/design-review">go.wandoujia.com/design-review</a> 登记。
       </div>
 
       {% with entry.prod_design_review as status %}{% include "form/review.html" %}{% endwith %}

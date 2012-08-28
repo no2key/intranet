@@ -98,14 +98,6 @@ class Entries(BaseRequestHandler):
     def post(self): # Create a new entry
         self.check_user()
         entry = get_entry_from_request(self.request)
-        if entry.impact in ["experiment", "dogfood", "beta"]:
-          entry.prod_design_review = "waived"
-          entry.eng_design_review = "waived"
-        else:
-          if not entry.prod_design_doc:
-            entry.prod_design_review = "missing"
-          if not entry.eng_design_doc:
-            entry.eng_design_review = "missing"
         entry.created_by = self.person
         entry.put()
         memcache.flush_all()
@@ -135,14 +127,6 @@ class Entry(BaseRequestHandler):
           new_story(self, "changed the note to <em>%s</em>" % entry.notes, entry=entry)
         if entry.impact != entry_updated.impact:
           entry.impact = entry_updated.impact
-          if entry.impact in ["experiment", "dogfood", "beta"]:
-            entry.prod_design_review = "waived"
-            entry.eng_design_review = "waived"
-          else: 
-            if not entry.prod_design_doc:
-              entry.prod_design_review = "missing"
-            if not entry.eng_design_doc:
-              entry.eng_design_review = "missing"
           new_story(self, "changed the impact to <em>%s</em>" % entry.impact, entry=entry)
         if entry.project.key() != entry_updated.project.key():
           entry.project = entry_updated.project

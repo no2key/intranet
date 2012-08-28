@@ -44,33 +44,27 @@
         </div>
       {% endif %}
       <h3>Reviews</h3>
-      <h6>Product Design Review</h6>
+      <h5>Product Design Review</h5>
       <p>
+        {% with entry.prod_design_review_status as status %}{% include "span/approval.html" %}{% endwith %}
+        <a data-toggle="modal" href="#form-prod-design-review"><i class="icon-pencil"></i></a>
         {% if entry.prod_design_doc %}
-          <a href="{{ entry.prod_design_doc }}">产品设计文档</a>
-          {% with entry.prod_design_review as status %}{% include "span/approval.html" %}{% endwith %}
-        {% else %}
-          {% ifequal entry.prod_design_review "waived" %}
-            {% with entry.prod_design_review as status %}{% include "span/approval.html" %}{% endwith %}
-          {% else %}
-          <a data-toggle="modal" class="btn btn-mini" href="#form-entry-edit">添加产品设计文档</a>
-        {% endifequal%}
-      {% endif %}
-        <small><a data-toggle="modal" href="#form-prod-design-review"><i class="icon-pencil"></i>修改 review 状态</a></small>
-      </p>
-      <h6>Engineering Design Review</h6>
-      <p>
-        {% if entry.eng_design_doc %}
-          <a href="{{ entry.eng_design_doc }}">工程设计文档</a>
-          {% with entry.eng_design_review as status %}{% include "span/approval.html" %}{% endwith %}
-        {% else %}
-          {% ifequal entry.eng_design_review "waived" %}
-            {% with entry.eng_design_review as status %}{% include "span/approval.html" %}{% endwith %}
-          {% else %}
-          <a data-toggle="modal" class="btn btn-mini" href="#form-entry-edit">添加工程设计文档</a>
-          {% endifequal%}
+          <code>{{ entry.prod_design_doc }}</code> <a href="{{ entry.prod_design_doc }}"><i class="icon-arrow-right"></i></a>
         {% endif %}
-        <small><a data-toggle="modal" href="#form-eng-design-review"><i class="icon-pencil"></i>修改 review 状态</a></small>
+        {% ifequal entry.prod_design_review_status "missing" %}
+          本发布需要<a data-toggle="modal" href="#form-entry-edit">填写产品设计文档</a>，或标记为免去 review。
+        {% endifequal %}
+      </p>
+      <h5>Engineering Design Review</h5>
+      <p>
+        {% with entry.eng_design_review_status as status %}{% include "span/approval.html" %}{% endwith %}
+        <a data-toggle="modal" href="#form-eng-design-review"><i class="icon-pencil"></i></a>
+        {% if entry.eng_design_doc %}
+          <code>{{ entry.eng_design_doc }}</code> <a href="{{ entry.eng_design_doc }}"><i class="icon-arrow-right"></i></a>
+        {% endif %}
+        {% ifequal entry.eng_design_review_status "missing" %}
+          本发布需要<a data-toggle="modal" href="#form-entry-edit">填写工程设计文档</a>，或标记为免去 review。
+        {% endifequal %}
       </p>
       <h3>动态</h3>
       {% with entry.stories as stories %}{% include "ul/stories.html" %}{% endwith %}
@@ -80,44 +74,30 @@
       </form>
     </div>
     <div class="span4">
-      <h3>项目成员</h3>
+      <h5>项目成员</h5>
       <ul class="unstyled">
         {% for notifier in entry.notifiers %}
         <li>{% with notifier as person %}{% include "a/person.html" %}{% endwith %}</li>
+        {% empty %}
+        本项目还没有成员。
         {% endfor %}
       </ul>
-      <h3>其它信息</h3>
+      <h5>其它信息</h5>
       <ul class="unstyled">
-        <li>
-          <h6>Project</h6>
-          <p>{% with entry.project as project %}{% include "a/project.html" %}{% endwith %}</p>
-        </li>
         {% if entry.calendar_view_uri %}
         <li>
-          <h6>Calendar</h6>
-          <p><a href="{{ entry.calendar_view_uri }}">在 Google Calendar 中查看</a></p>
+          <a href="{{ entry.calendar_view_uri }}">在 Google Calendar 中查看 &raquo;</a>
         </li>
         {% endif %}
         {% if entry.created_by %}
         <li>
-          <h6>Creator</h6>
-          <p>{% with entry.created_by as person %}{% include "a/person.html" %}{% endwith %}</p>
+          由 {% with entry.created_by as person %}{% include "a/person.html" %}{% endwith %} 创建
         </li>
         {% endif %}
-        <li>
-          <h6>Created at</h6>
-          <p>{{ entry.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}</p>
-        </li>
-        <li>
-          <h6>Modified at</h6>
-          <p>{{ entry.modified_at|cst|date:"SHORT_DATETIME_FORMAT" }}</p>
-        </li>
-        <li class="divider"></li>
-        <li>
-          <p><a data-toggle="modal" href="#form-entry-edit"><i class="icon-pencil"></i>修改发布信息</a>
-          </p>
-        </li>
+        <li>创建于 {{ entry.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}</li>
+        <li>最后更新于{{ entry.modified_at|cst|date:"SHORT_DATETIME_FORMAT" }}</li>
       </ul>
+      <p><a data-toggle="modal" href="#form-entry-edit"><i class="icon-pencil"></i>修改发布信息</a></p>
     </div>
   </div>
 {% include "modal/entry_edit.html" %}

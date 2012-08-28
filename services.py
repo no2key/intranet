@@ -77,9 +77,10 @@ class Email(webapp2.RequestHandler):
         message.bcc = settings.ADMINS
         message.subject = email.subject
         message.reply_to = email.sender
-        message.headers = {
-            "References": email.reference # Make threading works in Gmail
-        } 
+        if email.reference:
+          message.headers = {
+              "References": email.reference # Make threading works in Gmail
+          } 
         logging.info("Message sent to: %s" % message.to)
 
         # Set text and html body
@@ -177,8 +178,9 @@ class SyncCalendarEvent(webapp2.RequestHandler):
           new_event = client.InsertEvent(event, insert_uri=feed_uri)
           entry.calendar_edit_uri = new_event.GetEditLink().href
           entry.calendar_view_uri = new_event.GetHtmlLink().href
-          entry.put()
           logging.info("Event Created: " + new_event.id.text)
+        entry.calendar_synced = True
+        entry.put()
 
 class SyncCalendarReset(webapp2.RequestHandler):
   def get(self):

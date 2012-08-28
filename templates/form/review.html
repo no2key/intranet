@@ -1,14 +1,9 @@
 <fieldset>
   <div class="control-group">
     <div class="controls">
-      {{ status }}
       <label class="radio">
         <input type="radio" name="status" value="new" required{% ifequal status "new" %} checked{% endifequal %}>
         <strong>New</strong>。刚刚收到，还没有处理。
-      </label>
-      <label class="radio">
-        <input type="radio" name="status" value="ack" required{% ifequal status "ack" %} checked{% endifequal %}>
-        <strong>Ack</strong>。已收到文档，会尽快安排 review。
       </label>
       <label class="radio">
         <input type="radio" name="status" value="approved" required{% ifequal status "approved" %} checked{% endifequal %}>
@@ -31,5 +26,4 @@
       <p class="help-block">支持 Markdown 格式。</p>
     </div>
   </div>
-  <!-- TODO: Remember selections. -->
 </fieldset>

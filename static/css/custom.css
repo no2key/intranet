@@ -60,10 +60,21 @@ sup {
   margin-bottom: 9px;
 }
 span.label {
-  cursor: pointer;
+  cursor: default;
 }
 footer {
   margin-top: 45px;
   padding: 35px 0 36px;
   border-top: 1px solid #e5e5e5;
+}
+
+/* Overwritting modal dialogs */
+.modal {
+  margin-top: -300px;
+}
+.modal-body {
+  max-height: 500px;
+}
+.table h5 {
+  margin: 0;
 }
