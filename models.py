@@ -161,7 +161,10 @@ class Entry(db.Model):
         return "waived"
       else:
         if not self.prod_design_doc:
-          return "missing"
+          if self.prod_design_review == "waived":
+            return "waived"
+          else:
+            return "missing"
         else:
           return self.prod_design_review
 
@@ -171,7 +174,10 @@ class Entry(db.Model):
         return "waived"
       else:
         if not self.eng_design_doc:
-          return "missing"
+          if self.eng_design_review == "waived":
+            return "waived"
+          else:
+            return "missing"
         else:
           return self.eng_design_review
 

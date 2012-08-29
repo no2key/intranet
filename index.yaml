@@ -23,12 +23,34 @@ indexes:
 
 - kind: Entry
   properties:
+  - name: eng_design_review_status
+  - name: due_on
+
+- kind: Entry
+  properties:
+  - name: eng_design_review_status
+  - name: status
+  - name: due_on
+
+- kind: Entry
+  properties:
   - name: prod_design_review
   - name: due_on
 
 - kind: Entry
   properties:
   - name: prod_design_review
+  - name: status
+  - name: due_on
+
+- kind: Entry
+  properties:
+  - name: prod_design_review_status
+  - name: due_on
+
+- kind: Entry
+  properties:
+  - name: prod_design_review_status
   - name: status
   - name: due_on
 

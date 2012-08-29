@@ -134,10 +134,9 @@ class SyncCalendar(webapp2.RequestHandler):
   def get(self):
     entries = models.Entry.all().filter("calendar_synced", False)
     for entry in entries:
-      taskqueue.add(url="/services/sync/calendar/%s" % entry.key())
+      taskqueue.add(queue_name='calendar', url="/services/sync/calendar/%s" % entry.key())
       self.response.out.write("Entry %s waiting to be synced to calenadr.<br>" % entry.name)
       # TODO: Sync event followers to Google Calendar
-
         
 class SyncCalendarEvent(webapp2.RequestHandler):
   def post(self, key):
@@ -263,6 +262,20 @@ class CheckDelays(webapp2.RequestHandler):
           if entry.delayed:
             handlers.new_story(self, "This is delayed", entry=entry)
 
+class FixReviewStatus(webapp2.RequestHandler):
+  def get(self):
+      entries = models.Entry.all().filter("prod_design_review", "missing")
+      for entry in entries:
+        entry.prod_design_review = "new"
+        self.response.out.write("Fix prod review status for %s.<br>" % entry.name)
+        entry.put()
+      entries = models.Entry.all().filter("eng_design_review", "missing")
+      for entry in entries:
+        entry.eng_design_review = "new"
+        self.response.out.write("Fix eng review status for %s.<br>" % entry.name)
+        entry.put()
+
+    
 def generate_email(email):
   email.put()
   logging.info("Created an email.")
@@ -336,6 +349,7 @@ urls = [
     (r'/services/sync/users', SyncUsers),
     (r'/services/sync/profiles', SyncProfiles),
     (r'/services/check/delays', CheckDelays),
+    (r'/services/fix/review-status', FixReviewStatus),
     IncomingMail.mapping()
 ]
 
