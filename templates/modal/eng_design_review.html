@@ -10,7 +10,7 @@
         非紧急情况，仅 {{ engineering_reviewer }} 有权修改此项目。在紧急情况下，可自行修改。
       </div>
 
-      {% with entry.eng_design_review as status %}{% include "form/review.html" %}{% endwith %}
+      {% with entry.eng_design_review_status as status %}{% include "form/review.html" %}{% endwith %}
     </div>
     <div class="modal-footer">
       <button type="submit" data-loading-text="保存ing..." class="btn btn-primary">保存</button>

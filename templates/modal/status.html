@@ -21,13 +21,14 @@
             
             <label class="radio">
               <input type="radio" name="status" value="completed"{% ifequal status "completed" %} checked="checked"{% endifequal %}{% if not entry.ready %} disabled{% endif %}>
-              <strong>Completed (已完成)</strong>。所有计划发布的功能都已完成并冻结。如果你是搭别人的车，这意味着你的工作已经基本完成，买好票上车了，接下来的状态将由开车的同学负责。
+              <strong>Completed (已完成)</strong>。所有计划发布的功能都已完成并冻结。如果你是搭别人的车，这意味着你的工作已经基本完成，买好票上车了，接下来的状态将由开车的同学负责。这也意味着测试同学开始开始测试了。
               {% if not entry.ready %}
               <div class="alert alert-error">
                 <strong>需要 review</strong>。
                 请先完成 Product Design Review 和 Engineering Design Review。
               </div>
               {% endif %}
+              <div class="alert alert-info">选择本状态，会自动向 testing@wandoujia.com 发送一份开发完成通知。请注意在下面的文本框中填写发布附言。</div>
             </label>
             
             <label class="radio" disabled>
@@ -47,7 +48,7 @@
                 本发布的发布状态是由 {{ entry.dependency.name }} 进行管理的。
               </div>
               {% else %}
-              <div class="alert alert-info">选择本状态，会自动向 launch@wandoujia.com 发送一份上线通知；请注意在下面的文本框中填写发布附言。</div>
+              <div class="alert alert-info">选择本状态，会自动向 launch@wandoujia.com 发送一份准备就绪通知。请注意在下面的文本框中填写发布附言。</div>
               {% endif %}
               {% if not entry.ready %}
               <div class="alert alert-error">
@@ -80,6 +81,7 @@
                 请先完成 Product Design Review 和 Engineering Design Review，并且也保证搭车的所有项目都已完成这两个 review。
               </div>
               {% endif %}
+              <div class="alert alert-info">选择本状态，会自动向 all@wandoujia.com 发送一份发布通知。请注意在下面的文本框中填写发布附言。</div>
             </label>
             
             <label class="radio">

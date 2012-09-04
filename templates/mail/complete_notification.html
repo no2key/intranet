@@ -1,7 +1,7 @@
 {% load markup %}
 
-<p>本发布已被 {{ person.given_name }} {{ person.family_name }} 标记为 <strong>"Ready (就绪)"</strong>。即，所有计划发布的功能，及搭车的所有功能都已研发和测试完成。代码已冻结，随时都可以发布。</p>
-<h3>发布附言</h3>
+<p>本发布已被 {{ person.given_name }} {{ person.family_name }} 标记为 <strong>"Completed (已完成)"</strong>。所有计划发布的功能都已完成并冻结，接下来的状态将由开车的同学负责，测试团队也可开始测试。</p>
+<h3>附言</h3>
 {{ text|markdown }}
 <h3>发布内容</h3>
 <h4>[{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }})</h4>

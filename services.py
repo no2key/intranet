@@ -74,6 +74,8 @@ class Email(webapp2.RequestHandler):
         message = mail.EmailMessage()
         message.sender = email.sender
         message.to = email.to
+        if email.cc:
+          message.cc = email.cc
         message.bcc = settings.ADMINS
         message.subject = email.subject
         message.reply_to = email.sender
@@ -136,6 +138,8 @@ class SyncCalendar(webapp2.RequestHandler):
     for entry in entries:
       taskqueue.add(queue_name='calendar', url="/services/sync/calendar/%s" % entry.key())
       self.response.out.write("Entry %s waiting to be synced to calenadr.<br>" % entry.name)
+      entry.calendar_synced = True
+      entry.put()
       # TODO: Sync event followers to Google Calendar
         
 class SyncCalendarEvent(webapp2.RequestHandler):
@@ -178,8 +182,6 @@ class SyncCalendarEvent(webapp2.RequestHandler):
           entry.calendar_edit_uri = new_event.GetEditLink().href
           entry.calendar_view_uri = new_event.GetHtmlLink().href
           logging.info("Event Created: " + new_event.id.text)
-        entry.calendar_synced = True
-        entry.put()
 
 class SyncCalendarReset(webapp2.RequestHandler):
   def get(self):
@@ -278,7 +280,7 @@ class FixReviewStatus(webapp2.RequestHandler):
     
 def generate_email(email):
   email.put()
-  logging.info("Created an email.")
+  logging.info("Created email #%s." % email.key())
   taskqueue.add(url="/services/email/%s" % email.key())
 
 def remove_quotes(text):

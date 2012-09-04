@@ -209,6 +209,16 @@ class EntryStatus(BaseRequestHandler):
         entry = models.Entry.get(key)
         status = decode(self.request.get("status"))
         text = decode(self.request.get("text"))
+
+        # For email notifications
+        values = {"entry": entry, "base_url": settings.BASE_URL, "text": text, "person": self.person}
+        cc = []
+        for notifier in entry.notifiers:
+          cc.append(notifier.email)
+        cc_list = list(set(cc))
+        sender = "%s %s via wandoulabs.com <entry-%s@%s.appspotmail.com>" % (
+            self.person.given_name, self.person.family_name, entry.key(), settings.APP_ID)
+
         if entry.status != status:
           entry.status = status
           if entry.status == "ready":
@@ -219,16 +229,24 @@ class EntryStatus(BaseRequestHandler):
               relier.put()
             
             # Send launch notifications
-            values = {"entry": entry, "base_url": settings.BASE_URL, "text": text}
-            cc = []
-            for notifier in entry.notifiers:
-              cc.append(notifier.email)
             email = models.Email(
-              sender = "Launch Notifier <entry-%s@%s.appspotmail.com>" % (entry.key(), settings.APP_ID),
-              subject = unicode(render_to_string("mail/ready_notification_subject.txt", values)),
+              sender = sender,
+              subject = unicode(u"上线准备就绪: %s - %s" % (entry.name, entry.project.name)),
               to = [db.Email("launch@wandoujia.com")],
-              cc = list(set(cc)),
+              cc = cc_list,
               html = render_to_string("mail/ready_notification.html", values)
+            )
+            services.generate_email(email)
+
+          elif entry.status == "completed":
+            new_story(self, "completed <em>%s</em>" % entry.name, entry=entry)
+            # Send completed notifications
+            email = models.Email(
+              sender = sender,
+              subject = unicode(u"开发完成: %s - %s" % (entry.name, entry.project.name)),
+              to = [db.Email("testing@wandoujia.com")],
+              cc = cc_list,
+              html = render_to_string("mail/complete_notification.html", values)
             )
             services.generate_email(email)
 
@@ -240,7 +258,15 @@ class EntryStatus(BaseRequestHandler):
               relier.launched_at = entry.launched_at
               new_story(self, "launched <em>%s</em>" % entry.name, entry=relier)
               relier.put()
-            # TODO: Send out anouncement email.
+            # Send announcement notifications
+            email = models.Email(
+              sender = sender,
+              subject = unicode(u"已发布: %s - %s" % (entry.name, entry.project.name)),
+              to = [db.Email("all@wandoujia.com")],
+              cc = cc_list,
+              html = render_to_string("mail/launch_notification.html", values)
+            )
+            services.generate_email(email)
           else:
             new_story(self, "changed status to <em>%s</em>" % status, entry=entry)
           entry.put()

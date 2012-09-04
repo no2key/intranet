@@ -1,6 +1,16 @@
 <fieldset>
   <div class="control-group">
     <div class="controls">
+      {% ifequal status "missing" %}
+      <label class="radio">
+        <input type="radio" name="status" value="new" checked required>
+        <strong>Missing</strong>。本发布缺失设计文档。
+      </label>
+      <label class="radio">
+        <input type="radio" name="status" value="waived" required{% ifequal status "waived" %} checked{% endifequal %}>
+        <strong>Waived</strong>。本发布不需要设计文档。
+      </label>
+      {% else %}
       <label class="radio">
         <input type="radio" name="status" value="new" required{% ifequal status "new" %} checked{% endifequal %}>
         <strong>New</strong>。刚刚收到，还没有处理。
@@ -15,8 +25,10 @@
       </label>
       <label class="radio">
         <input type="radio" name="status" value="waived" required{% ifequal status "waived" %} checked{% endifequal %}>
-        <strong>Waived</strong>。免去 review。
+        <strong>Waived</strong>。不需要 review。
       </label>
+      {% endifequal %}
+      
     </div>
   </div>
   <hr>
