@@ -1,6 +1,6 @@
 {% load markup %}
 
-<p>{{ person.given_name }} 刚刚做了一个发布！请恭喜。</p>
+<p>{{ person.given_name }} 刚刚成功发布了 <strong>{{ entry.name }}</strong>！请恭喜。</p>
 <h3>发布附言</h3>
 {{ text|markdown }}
 <h3>发布内容</h3>

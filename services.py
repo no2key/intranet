@@ -78,7 +78,7 @@ class Email(webapp2.RequestHandler):
           message.cc = email.cc
         message.bcc = settings.ADMINS
         message.subject = email.subject
-        message.reply_to = email.sender
+        # message.reply_to = email.sender
         if email.reference:
           message.headers = {
               "References": email.reference # Make threading works in Gmail

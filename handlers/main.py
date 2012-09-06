@@ -231,7 +231,7 @@ class EntryStatus(BaseRequestHandler):
             # Send launch notifications
             email = models.Email(
               sender = sender,
-              subject = unicode(u"上线准备就绪: %s - %s" % (entry.name, entry.project.name)),
+              subject = unicode(u"[上线准备就绪][%s] %s" % (entry.project.name, entry.name)),
               to = [db.Email("launch@wandoujia.com")],
               cc = cc_list,
               html = render_to_string("mail/ready_notification.html", values)
@@ -243,7 +243,7 @@ class EntryStatus(BaseRequestHandler):
             # Send completed notifications
             email = models.Email(
               sender = sender,
-              subject = unicode(u"开发完成: %s - %s" % (entry.name, entry.project.name)),
+              subject = unicode(u"[开发完成][%s] %s" % (entry.project.name, entry.name)),
               to = [db.Email("testing@wandoujia.com")],
               cc = cc_list,
               html = render_to_string("mail/complete_notification.html", values)
@@ -261,7 +261,7 @@ class EntryStatus(BaseRequestHandler):
             # Send announcement notifications
             email = models.Email(
               sender = sender,
-              subject = unicode(u"已发布: %s - %s" % (entry.name, entry.project.name)),
+              subject = unicode(u"[发布成功][%s] %s" % (entry.project.name, entry.name)),
               to = [db.Email("all@wandoujia.com")],
               cc = cc_list,
               html = render_to_string("mail/launch_notification.html", values)
