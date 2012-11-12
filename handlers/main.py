@@ -55,10 +55,19 @@ class Project(BaseRequestHandler):
         # Display project information
         project = models.Project.get(key)
         template_values = {
-          "project": project,
-          "active_entries": models.Entry.gql("WHERE project = :1 AND status IN ('new', 'in progress', 'ready') ORDER BY due_on", project.key()),
-          "launched_entries": models.Entry.gql("WHERE project = :1 AND status = 'launched' ORDER BY due_on", project.key()),
-          "cancelled_entries": models.Entry.gql("WHERE project = :1 AND status = 'cancelled' ORDER BY due_on", project.key()),
+            "project": project,
+            "active_entries": models.Entry.gql(
+                "WHERE project = :1 AND "
+                "status IN ('new', 'in progress', 'ready') ORDER BY due_on", 
+                project.key()),
+            "launched_entries": models.Entry.gql(
+                "WHERE project = :1 AND "
+                "status = 'launched' ORDER BY due_on",
+                project.key()),
+            "cancelled_entries": models.Entry.gql(
+                "WHERE project = :1 AND "
+                "status = 'cancelled' ORDER BY due_on",
+                project.key()),
         }
         self.render("project.html", template_values)
 
@@ -67,14 +76,17 @@ class Project(BaseRequestHandler):
         project_updated = get_project_from_request(self.request)
         project = models.Project.get(key)
         if project.name != project_updated.name:
-          project.name = project_updated.name
-          new_story(self, "changed the name to <em>%s</em>" % project.name, project=project)
+            project.name = project_updated.name
+            new_story(self, "changed the name to <em>%s</em>" % project.name,
+                      project=project)
         if project.notes != project_updated.notes:
-          project.notes = project_updated.notes
-          new_story(self, "changed the notes to <em>%s</em>" % project.notes, project=project)
+            project.notes = project_updated.notes
+            new_story(self, "changed the notes to <em>%s</em>" % project.notes,
+                      project=project)
         if project.status != project_updated.status:
-          project.status = project_updated.status
-          new_story(self, "changed the status to <em>%s</em>" % project.status, project=project)
+            project.status = project_updated.status
+            new_story(self, "changed the status to <em>%s</em>" %
+                      project.status, project=project)
         project.put()
         memcache.flush_all()
         self.redirect("/projects/" + key)
@@ -90,9 +102,6 @@ class ProjectMembers(BaseRequestHandler):
 class Entries(BaseRequestHandler):
     def get(self): # Show all entries
         self.check_user()
-        template_values = {
-          "launched_entries": models.Entry.all().order('due_on')
-        }
         self.render("entries.html")
         
     def post(self): # Create a new entry
@@ -110,58 +119,80 @@ class Entry(BaseRequestHandler):
         # Render the template
         entry = models.Entry.get(key)
         template_values = {
-          "entry": entry
+            "entry": entry
         }
         self.render("entry.html", template_values)
 
     def post(self, key): # Update an entry.
         self.check_user()
-        entry_updated = get_entry_from_request(self.request)
+        edit = get_entry_from_request(self.request)
         entry = models.Entry.get(key)
-        # Check diffs and log changes
-        if entry.name != entry_updated.name:
-          entry.name = entry_updated.name
-          new_story(self, "changed the name to <em>%s</em>" % entry.name, entry=entry)
-        if entry.notes != entry_updated.notes:
-          entry.notes = entry_updated.notes
-          new_story(self, "changed the note to <em>%s</em>" % entry.notes, entry=entry)
-        if entry.impact != entry_updated.impact:
-          entry.impact = entry_updated.impact
-          new_story(self, "changed the impact to <em>%s</em>" % entry.impact, entry=entry)
-        if entry.project.key() != entry_updated.project.key():
-          entry.project = entry_updated.project
-          new_story(self, "moved to <em>%s</em>" % entry.project.name, entry=entry)
-        if entry.prod_design_doc != entry_updated.prod_design_doc:
-          entry.prod_design_doc = entry_updated.prod_design_doc
-          new_story(self, "changed the product design doc to <em>%s</em>" % entry.prod_design_doc, entry=entry)
-        if entry.eng_design_doc != entry_updated.eng_design_doc:
-          entry.eng_design_doc = entry_updated.eng_design_doc
-          new_story(self, "changed the engineering design doc to <em>%s</em>" % entry.eng_design_doc, entry=entry)
-
-        if entry.type != entry_updated.type:
-          entry.type = entry_updated.type
-          if entry.type == "platform":
-            new_story(self, "marked as ship independently", entry=entry)
-          elif entry.type == "product":
-            new_story(self, "marked as rely on others", entry=entry)
+        # Check diffs and save changes
+        if entry.name != edit.name:
+            entry.name = edit.name
+            new_story(self, "changed the name to <em>%s</em>" % entry.name,
+                      entry=entry)
+        if entry.notes != edit.notes:
+            entry.notes = edit.notes
+            new_story(self, "changed the note to <em>%s</em>" % entry.notes,
+                      entry=entry)
+        if entry.impact != edit.impact:
+            entry.impact = edit.impact
+            new_story(self, "changed the impact to <em>%s</em>" % entry.impact,
+                      entry=entry)
+        if entry.project.key() != edit.project.key():
+            entry.project = edit.project
+            new_story(self, "moved to <em>%s</em>" % entry.project.name,
+                      entry=entry)
+        if entry.prod_design_doc != edit.prod_design_doc:
+            entry.prod_design_doc = edit.prod_design_doc
+            new_story(self, "changed the product design doc to <em>%s</em>" %
+                      entry.prod_design_doc, entry=entry)
+        if entry.eng_design_doc != edit.eng_design_doc:
+            entry.eng_design_doc = edit.eng_design_doc
+            new_story(self, "changed the eng design doc to <em>%s</em>" %
+                      entry.eng_design_doc, entry=entry)
+        if entry.mktg_doc != edit.mktg_doc:
+            entry.mktg_doc = edit.mktg_doc
+            new_story(self, "changed the marketing plan to <em>%s</em>" %
+                      entry.mktg_doc, entry=entry)
+        if entry.type != edit.type:
+            entry.type = edit.type
+            if entry.type == "platform":
+                new_story(self, "marked as ship independently", entry=entry)
+            elif entry.type == "product":
+                new_story(self, "marked as rely on others", entry=entry)
         if entry.type == "platform":
-          # For platform, due_on will be filled in. And reliers will get the same due_on.
-          if entry.due_on != entry_updated.due_on:
-            entry.due_on = entry_updated.due_on
-            new_story(self, "changed the due day to <em>%s</em>" % entry.due_on.isoformat(), entry=entry)
+            # For platform, due_on will be filled in. 
+            # Reliers will get the same due_on.
+            if entry.due_on != edit.due_on:
+                entry.due_on = edit.due_on
+                new_story(self, "changed the due day to <em>%s</em>" %
+                          entry.due_on.isoformat(), entry=entry)
             if entry.reliers:
-              for relier in entry.reliers:
-                relier.due_on = entry.due_on
-                new_story(self, "changed the due day of <em>%s</em> to <em>%s</em>" % (entry.name, entry.due_on.isoformat()), entry=relier)
-                relier.put()
-          entry.dependency = None
+                for relier in entry.reliers:
+                    relier.due_on = entry.due_on
+                    new_story(
+                        self,
+                        "changed the due day of <em>%s</em> to <em>%s</em>" %
+                        (entry.name, entry.due_on.isoformat()),
+                        entry=relier)
+                    relier.put()
+            entry.dependency = None
+            if not compare_models(edit.prelude_to, entry.prelude_to):
+                entry.prelude_to = edit.prelude_to
+                new_story(self, "is now prelude to <em>%s</em>" %
+                          entry.prelude_to.name, entry=entry)
         elif entry.type == "product":
-          # For products
-          if not compare_models(entry_updated.dependency, entry.dependency):
-            entry.dependency = entry_updated.dependency
-            entry.due_on = entry.dependency.due_on
-            new_story(self, "will rely on <em>%s</em> to ship on <em>%s</em>" % (entry.dependency.name, entry.due_on), entry=entry)
-
+            # For products
+            if not compare_models(edit.dependency, entry.dependency):
+                entry.dependency = edit.dependency
+                entry.due_on = entry.dependency.due_on
+                new_story(
+                    self,
+                    "will rely on <em>%s</em> to ship on <em>%s</em>" %
+                    (entry.dependency.name, entry.due_on),
+                    entry=entry)
         entry.put()
         memcache.flush_all()
         self.redirect('/entries/' + key)
@@ -189,17 +220,33 @@ class EntryReview(BaseRequestHandler):
         status = decode(self.request.get("status"))
         text = decode(self.request.get("text"))
         if type == "prod":
-          if entry.prod_design_review != status:
-            entry.prod_design_review = status
-            new_story(self, "changed product design review status to <em>%s</em>" % status, entry=entry)
-            entry.put()
+            if entry.prod_design_review != status:
+                entry.prod_design_review = status
+                new_story(
+                    self,
+                    "changed product design review status to <em>%s</em>" % 
+                    status,
+                    entry=entry)
+                entry.put()
         elif type == "eng":
-          if entry.eng_design_review != status:
-            entry.eng_design_review = status
-            new_story(self, "changed engineering design review status to <em>%s</em>" % status, entry=entry)
-            entry.put()
+            if entry.eng_design_review != status:
+                entry.eng_design_review = status
+                new_story(
+                    self,
+                    "changed eng design review status to <em>%s</em>" %
+                    status, 
+                    entry=entry)
+                entry.put()
+        elif type == "mktg":
+            if entry.mktg_review != status:
+                entry.mktg_review = status
+                new_story(
+                    self,
+                    "changed marketing review status to <em>%s</em>" %
+                    status,
+                    entry=entry)
         if text:
-          new_story(self, text, entry=entry, type="comment")
+            new_story(self, text, entry=entry, type="comment")
         memcache.flush_all()
         self.redirect("/entries/" + key)
 
@@ -211,67 +258,87 @@ class EntryStatus(BaseRequestHandler):
         text = decode(self.request.get("text"))
 
         # For email notifications
-        values = {"entry": entry, "base_url": settings.BASE_URL, "text": text, "person": self.person}
+        values = {
+            "entry": entry,
+            "base_url": settings.BASE_URL,
+            "text": text,
+            "person": self.person
+        }
         cc = []
         for notifier in entry.notifiers:
-          cc.append(notifier.email)
+            cc.append(notifier.email)
         cc_list = list(set(cc))
-        sender = "%s %s via wandoulabs.com <entry-%s@%s.appspotmail.com>" % (
-            self.person.given_name, self.person.family_name, entry.key(), settings.APP_ID)
+        sender = ("%s %s via wandoulabs.com <entry-%s@%s.appspotmail.com>" %
+                  (self.person.given_name, self.person.family_name,
+                   entry.key(), settings.APP_ID))
 
         if entry.status != status:
-          entry.status = status
-          if entry.status == "ready":
-            new_story(self, "declared <em>%s</em> is ready to launch" % entry.name, entry=entry)
-            for relier in entry.reliers: # Reliers' launch statuses are in sync with dependent.
-              relier.status = entry.status
-              new_story(self, "declared <em>%s</em> is ready to launch" % entry.name, entry=relier)
-              relier.put()
-            
-            # Send launch notifications
-            email = models.Email(
-              sender = sender,
-              subject = unicode(u"[上线准备就绪][%s] %s" % (entry.project.name, entry.name)),
-              to = [db.Email("launch@wandoujia.com")],
-              cc = cc_list,
-              html = render_to_string("mail/ready_notification.html", values)
-            )
-            services.generate_email(email)
+            entry.status = status
+            if entry.status == "ready":
+                new_story(self, "declared <em>%s</em> is ready to launch" %
+                          entry.name, entry=entry)
+                for relier in entry.reliers:
+                    # Reliers' launch statuses are in sync with dependent.
+                    relier.status = entry.status
+                    new_story(self, "declared <em>%s</em> is ready to launch" %
+                              entry.name, entry=relier)
+                    relier.put()
+                
+                # Send launch notifications
+                email = models.Email(
+                    sender = sender,
+                    subject = unicode(u"[上线准备就绪][%s] %s" %
+                                      (entry.project.name, entry.name)),
+                    to = [db.Email("launch@wandoujia.com")],
+                    cc = cc_list,
+                    html = render_to_string("mail/ready_notification.html",
+                                            values)
+                )
+                services.generate_email(email)
 
-          elif entry.status == "completed":
-            new_story(self, "completed <em>%s</em>" % entry.name, entry=entry)
-            # Send completed notifications
-            email = models.Email(
-              sender = sender,
-              subject = unicode(u"[开发完成][%s] %s" % (entry.project.name, entry.name)),
-              to = [db.Email("testing@wandoujia.com")],
-              cc = cc_list,
-              html = render_to_string("mail/complete_notification.html", values)
-            )
-            services.generate_email(email)
+            elif entry.status == "completed":
+                new_story(self, "completed <em>%s</em>" % entry.name,
+                          entry=entry)
+                # Send completed notifications
+                email = models.Email(
+                    sender = sender,
+                    subject = unicode(u"[开发完成][%s] %s" %
+                                      (entry.project.name, entry.name)),
+                    to = [db.Email("testing@wandoujia.com")],
+                    cc = cc_list,
+                    html = render_to_string("mail/complete_notification.html", 
+                                            values)
+                )
+                services.generate_email(email)
 
-          elif entry.status == "launched": # Reliers' launch statuses are in sync with dependent.
-            entry.launched_at = datetime.datetime.now()
-            new_story(self, "launched <em>%s</em>" % entry.name, entry=entry)
-            for relier in entry.reliers:
-              relier.status = entry.status
-              relier.launched_at = entry.launched_at
-              new_story(self, "launched <em>%s</em>" % entry.name, entry=relier)
-              relier.put()
-            # Send announcement notifications
-            email = models.Email(
-              sender = sender,
-              subject = unicode(u"[发布成功][%s] %s" % (entry.project.name, entry.name)),
-              to = [db.Email("all@wandoujia.com")],
-              cc = cc_list,
-              html = render_to_string("mail/launch_notification.html", values)
-            )
-            services.generate_email(email)
-          else:
-            new_story(self, "changed status to <em>%s</em>" % status, entry=entry)
-          entry.put()
+            elif entry.status == "launched":
+                # Reliers' launch statuses are in sync with dependent.
+                entry.launched_at = datetime.datetime.now()
+                new_story(self, "launched <em>%s</em>" % entry.name,
+                          entry=entry)
+                for relier in entry.reliers:
+                    relier.status = entry.status
+                    relier.launched_at = entry.launched_at
+                    new_story(self, "launched <em>%s</em>" % entry.name,
+                              entry=relier)
+                    relier.put()
+                # Send announcement notifications
+                email = models.Email(
+                    sender = sender,
+                    subject = unicode(u"[发布成功][%s] %s" %
+                                      (entry.project.name, entry.name)),
+                    to = [db.Email("all@wandoujia.com")],
+                    cc = cc_list,
+                    html = render_to_string("mail/launch_notification.html",
+                                            values)
+                )
+                services.generate_email(email)
+            else:
+                new_story(self, "changed status to <em>%s</em>" % status,
+                          entry=entry)
+            entry.put()
         if text:
-          new_story(self, text, entry=entry, type="comment")
+            new_story(self, text, entry=entry, type="comment")
         # TODO: Make texts more funny and useful
         memcache.flush_all()
         self.redirect("/entries/" + key)
@@ -281,27 +348,31 @@ class Stories(BaseRequestHandler):
         self.check_user()
         stories = models.Story.all().order('-created_at')
         template_values = {
-          'stories': stories
+            'stories': stories
         }
         self.render("stories.html", template_values)
         return
 
 class Reviews(BaseRequestHandler):
     def get(self, type):
-        if type not in ('prod', 'eng'):
-          self.error(404)
+        if type not in ('prod_design', 'eng_design', 'mktg'):
+            self.error(404)
         else:
-          required_entries = models.Entry.gql("WHERE %s_design_review IN ('new', 'missing', 'rejected', 'ack') AND status IN ('new', 'in progress') ORDER BY due_on" % type)
-          approved_entries = models.Entry.gql("WHERE %s_design_review = 'approved' ORDER BY due_on" % type)
-          waived_entries = models.Entry.gql("WHERE %s_design_review = 'waived' ORDER BY due_on" % type)
-
-          template_values = {
-            "type": type,
-            "required_entries": required_entries,
-            "approved_entries": approved_entries,
-            "waived_entries": waived_entries 
-          }
-          self.render("reviews.html", template_values)
+            required_entries = models.Entry.gql(
+                "WHERE %s_review IN "
+                "('new', 'missing', 'rejected', 'ack') AND "
+                "status IN ('new', 'in progress') ORDER BY due_on" % type)
+            approved_entries = models.Entry.gql(
+                "WHERE %s_review = 'approved' ORDER BY due_on" % type)
+            waived_entries = models.Entry.gql(
+                "WHERE %s_review = 'waived' ORDER BY due_on" % type)
+            template_values = {
+                "type": type,
+                "required_entries": required_entries,
+                "approved_entries": approved_entries,
+                "waived_entries": waived_entries 
+            }
+            self.render("reviews.html", template_values)
 
 class SignupStep1(webapp2.RequestHandler):
     # Generate and redirect users to GData APIs
@@ -367,69 +438,76 @@ class SignupStep2(webapp2.RequestHandler):
       logging.info(user_name)
       person = models.Person().get_by_key_name(user_name)
       if not person:
-        person = models.Person(
-          gaia = current_user,
-          email = current_user.email(),
-          key_name = user_name
-        )
+          person = models.Person(
+              gaia = current_user,
+              email = current_user.email(),
+              key_name = user_name
+          )
       person.is_setup = True
       person.put()
       memcache.flush_all()
       self.redirect('/')
 
 def get_entry_from_request(request):
-  if decode(request.get("type")) == "product":
-    dependency = models.Entry.get(decode(request.get("dependency")))
-    due_on = dependency.due_on
-  else:
-    due_on = iso_to_date(decode(request.get("due_on")))
-  entry = models.Entry(
-    name = decode(request.get("name")),
-    notes = decode(request.get("notes")),
-    impact = decode(request.get("impact")),
-    project = models.Project.get(decode(request.get("project"))),
-    due_on = due_on,
-    type = decode(request.get("type")),
-    prod_design_doc = decode(request.get("prod_design_doc")),
-    eng_design_doc = decode(request.get("eng_design_doc"))
-  )
-  if entry.type == "product":
-    entry.dependency = models.Entry.get(decode(request.get("dependency")))
-  return entry
+    if decode(request.get("type")) == "product":
+        dependency = models.Entry.get(decode(request.get("dependency")))
+        due_on = dependency.due_on
+    else:
+        due_on = iso_to_date(decode(request.get("due_on")))
+    entry = models.Entry(
+        name = decode(request.get("name")),
+        notes = decode(request.get("notes")),
+        impact = decode(request.get("impact")),
+        project = models.Project.get(decode(request.get("project"))),
+        due_on = due_on,
+        type = decode(request.get("type")),
+        prod_design_doc = decode(request.get("prod_design_doc")),
+        eng_design_doc = decode(request.get("eng_design_doc")),
+        mktg_doc = decode(request.get("mktg_doc"))
+    )
+    if entry.type == "product":
+        entry.dependency = models.Entry.get(decode(request.get("dependency")))
+    elif entry.type == "platform" and decode(request.get("prelude_to")):
+        entry.prelude_to = models.Entry.get(decode(request.get("prelude_to")))
+    return entry
 
 def get_project_from_request(request):
-  project = models.Project(
-    name = decode(request.get("name")),
-    notes = decode(request.get("notes", None)),
-    status = decode(request.get("status")),
-  )
-  return project
+    project = models.Project(
+        name = decode(request.get("name")),
+        notes = decode(request.get("notes", None)),
+        status = decode(request.get("status")),
+    )
+    return project
 
 def iso_to_date(iso):
-  if iso:
-    strlist = iso.split('-')
-    return datetime.date(int(strlist[0]), int(strlist[1]), int(strlist[2]))
-  else:
-    return iso
+    if iso:
+        strlist = iso.split('-')
+        return datetime.date(int(strlist[0]), int(strlist[1]), int(strlist[2]))
+    else:
+        return iso
 
 def get_dates():
-  dates = {}
-  dates['today'] = datetime.date.today()
-  dates['this_monday'] = dates['today'] + datetime.timedelta(days=-dates['today'].weekday())
-  dates['this_sunday'] = dates['this_monday'] + datetime.timedelta(days=-1)
-  dates['next_monday'] = dates['this_monday'] + datetime.timedelta(weeks=1)
-  dates['next_sunday'] = dates['next_monday'] + datetime.timedelta(days=-1)
-  dates['the_monday_after_next_monday'] = dates['next_monday'] + datetime.timedelta(weeks=1)
-  dates['the_sunday_after_next_sunday'] = dates['the_monday_after_next_monday'] + datetime.timedelta(days=-1)
-  dates['30_days_later'] = dates['today'] + datetime.timedelta(days=30)
-  dates['31_days_later'] = dates['today'] + datetime.timedelta(days=31)
-  return dates
+    dates = {}
+    dates['today'] = datetime.date.today()
+    dates['this_monday'] = (dates['today'] +
+                            datetime.timedelta(days=-dates['today'].weekday()))
+    dates['this_sunday'] = dates['this_monday'] + datetime.timedelta(days=-1)
+    dates['next_monday'] = dates['this_monday'] + datetime.timedelta(weeks=1)
+    dates['next_sunday'] = dates['next_monday'] + datetime.timedelta(days=-1)
+    dates['the_monday_after_next_monday'] = (dates['next_monday']
+                                             + datetime.timedelta(weeks=1))
+    dates['the_sunday_after_next_sunday'] = (dates[
+                                                 'the_monday_after_next_monday'
+                                             ] + datetime.timedelta(days=-1))
+    dates['30_days_later'] = dates['today'] + datetime.timedelta(days=30)
+    dates['31_days_later'] = dates['today'] + datetime.timedelta(days=31)
+    return dates
 
 def decode(var):
-  """Safely decode form input. Return None if empty"""
-  if not var:
-    return None
-  return unicode(var, 'utf-8') if isinstance(var, str) else unicode(var)
+    """Safely decode form input. Return None if empty"""
+    if not var:
+        return None
+    return unicode(var, 'utf-8') if isinstance(var, str) else unicode(var)
 
 def decode_list(var):
     """Use decode to decode a list of form inputs"""
@@ -441,100 +519,111 @@ def decode_list(var):
     return new
 
 def string_list_to_users(string_list):
-    """Transcode a list of strings to a list of user objects (domain name added)"""
+    """Transcode a list of strings to a list of user objects + domain name)"""
     user_list = []
     for string in string_list:
-      if string:
-        user_list.append(string_to_user(string))
+        if string:
+            user_list.append(string_to_user(string))
     return user_list
 
 def compare_models(a, b):
-    """Compare two reference to models. Return false if different, true if same."""
+    """Compare two reference to models. Return false if different,
+       true if same."""
     if (a and not b) or (not a and b):
-      return False
+        return False
     if a and b:
-      return a.key() == b.key
+        return a.key() == b.key
     if not a and not b:
-      return True
+        return True
     
 def string_to_user(string):
     if string:
-      return models.Person.get_by_key_name(string)
+        return models.Person.get_by_key_name(string)
     else:
-      return None
+        return None
 
 def update_role(request, person, project, role):
-  if person:
-    if role == "owner":
-      # One project could only have one owner, remove other owners
-      for owner in project.owner:
-        owner.owns = None
-        owner.put()
-      # Remove other roles.
-      person.fulltime = None
-      if project.key() in person.plusones:
-        person.plusones.remove(project.key())
-      # Create new role
-      person.owns = project
-      new_story(request, "added <strong>%s</strong> as <em>owner</em>" % person.id, project=project, person=person)
-      
-    elif role == "fulltimer":
-      # Remove other roles.
-      # One could only be owner or fulltimer in one project.
-      person.owns = None
-      if project.key() in person.plusones:
-        person.plusones.remove(project.key())
-      # Create new role
-      person.fulltime = project
-      new_story(request, "added <strong>%s</strong> as <em>fulltimer</em>" % person.id, project=project, person=person)
+    if person:
+        if role == "owner":
+            # One project could only have one owner, remove other owners
+            for owner in project.owner:
+                owner.owns = None
+                owner.put()
+            # Remove other roles.
+            person.fulltime = None
+            if project.key() in person.plusones:
+                person.plusones.remove(project.key())
+            # Create new role
+            person.owns = project
+            new_story(request, "added <strong>%s</strong> as <em>owner</em>" %
+                      person.id, project=project, person=person)
+        
+        elif role == "fulltimer":
+            # Remove other roles.
+            # One could only be owner or fulltimer in one project.
+            person.owns = None
+            if project.key() in person.plusones:
+                person.plusones.remove(project.key())
+            # Create new role
+            person.fulltime = project
+            new_story(
+                request,
+                "added <strong>%s</strong> as <em>fulltimer</em>" % person.id,
+                project=project, person=person)
 
-    elif role == "plusoner":
-      # If already has other roles, remove that.
-      if person.fulltime and (person.fulltime.key() == project.key()):
-        person.fulltime = None
-      if person.owns and (person.owns.key() == project.key()):
-        person.owns = None
-      # Create new role
-      person.plusones.append(project.key())
-      new_story(request, "added <strong>%s</strong> as <em>\"+1\"er</em>" % person.id, project=project, person=person)
+        elif role == "plusoner":
+            # If already has other roles, remove that.
+            if person.fulltime and (person.fulltime.key() == project.key()):
+              person.fulltime = None
+            if person.owns and (person.owns.key() == project.key()):
+              person.owns = None
+            # Create new role
+            person.plusones.append(project.key())
+            new_story(
+                request,
+                "added <strong>%s</strong> as <em>\"+1\"er</em>" % person.id,
+                project=project, person=person)
+        else:
+            # Remove all roles from this project.
+            if person.fulltime and (person.fulltime.key() == project.key()):
+                person.fulltime = None
+            if person.owns and (person.owns.key() == project.key()):
+                person.owns = None
+            if project.key() in person.plusones:
+                person.plusones.remove(project.key())
+            new_story(
+                request,
+                "removed <strong>%s</strong> from this project" % person.id, 
+                project=project, person=person)
+        person.put()
+        memcache.flush_all()
+        request.redirect('/projects/' + str(project.key()))
     else:
-      # Remove all roles from this project.
-      if person.fulltime and (person.fulltime.key() == project.key()):
-        person.fulltime = None
-      if person.owns and (person.owns.key() == project.key()):
-        person.owns = None
-      if project.key() in person.plusones:
-        person.plusones.remove(project.key())
-      new_story(request, "removed <strong>%s</strong> from this project" % person.id, project=project, person=person)
-    person.put()
-    memcache.flush_all()
-    request.redirect('/projects/' + str(project.key()))
-  else:
-    request.error(500)
+        request.error(500)
   
-def new_story(request, text, type = "system", entry = None, project = None, person = None):
-  if not project:
-    project = entry.project
-  if not person:
-    person = request.person
-  story = models.Story(
-    text = text,
-    entry = entry,
-    project = project,
-    person = person,
-    type = type
-  )
-  if hasattr(request, "person"): # Sometimes stories are generated by system.
-    story.created_by = request.person
-  elif person:
-    story.created_by = person
-  story.put()
-  if story.entry:
-    story.entry.mailed = False
-    story.entry.calendar_synced = False
-    story.entry.put()
-  if story.project:
-    story.project.mailed = False
-    story.project.put()
-  # TODO: Same for person
-  
+def new_story(request, text, type = "system", entry = None, project = None,
+              person = None):
+    if not project:
+        project = entry.project
+    if not person:
+        person = request.person
+    story = models.Story(
+        text = text,
+        entry = entry,
+        project = project,
+        person = person,
+        type = type
+    )
+    if hasattr(request, "person"): # Sometimes stories are generated by system.
+        story.created_by = request.person
+    elif person:
+        story.created_by = person
+    story.put()
+    if story.entry:
+        story.entry.mailed = False
+        story.entry.calendar_synced = False
+        story.entry.put()
+    if story.project:
+        story.project.mailed = False
+        story.project.put()
+    # TODO: Same for person

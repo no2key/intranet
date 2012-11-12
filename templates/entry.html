@@ -3,81 +3,111 @@
 {% load filters %}
 {% load markup %}
 
-{% block title %}{{ entry.project.name }} &raquo; {{ entry.name }}{% endblock %}
+{% block title %}{{ entry.project.name }} » {{ entry.name }}{% endblock %}
 
 {% block content %}
   <div class="row">
     <div class="span8">{# Left column #}
       <div class="hero-unit">
         <p>
-          <a href="/">所有发布</a> <span class="divider">&raquo;</span>
-        {% with entry.project as project %}{% include "a/project.html" %}{% endwith %} <span class="divider">&raquo;</span>
+          <a href="/">所有发布</a> <span class="divider">»</span>
+          {% include "a/project.html" with project=entry.project %} <span class="divider">»</span>
         </p>
         <h1>
           {{ entry.name }}
-          {% with entry.impact as impact %}{% include "span/impact.html" %}{% endwith %}
+          {% include "span/impact.html" with impact=entry.impact %}
         </h1>
-        {{ entry.notes|markdown }}
+        {{ entry.notes|default:"Owner 很懒，连说明都不写。"|markdown }}
         <p>
+          {% spaceless %}
           预定在 <strong>{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</strong>
           {% if entry.type == "product" %}
-          , 由 {% with entry.dependency as entry %}{% include "a/entry.html" %}{% endwith %} 发布
+            , 由{% include "a/entry.html" with entry=entry.dependency %}发布
           {% else %}
             发布
             {% for entry in entry.reliers %}
               {% if forloop.first %}
                 , 并同时发布
               {% endif %}
-                {% include "a/entry.html" %}
+              「{% include "a/entry.html" %}」
               {% if not forloop.last %}, {% endif %}
             {% endfor %}
           {% endif %}
           。
+          {% if entry.prelude_to %}
+          后续将发布「{% include "a/entry.html" with entry=entry.prelude_to %}」。
+          {% endif %}
+          {% endspaceless %}
         </p>
+        
       </div>
-      {% with entry.status as status %}{% include "div/status.html" %}{% endwith %}
+      
+      {% include "div/status.html" with status=entry.status %}
+
       {% if entry.reliers.count %}
         <h3>搭车的乘客</h3>
-        <p>本发布会同时发布以下项目.</p>
-        <div class="well">
-          {% with entry.reliers as entries %}{% include "table/entries.html" %}{% endwith %}
+        <p>本发布会同时发布以下项目。</p>
+        <div class="well well-small">
+          {% include "table/entries.html" with entries=entry.reliers %}
         </div>
       {% endif %}
+
+      {% if entry.preludes.count %}
+        <h3>前序发布</h3>
+        <p>本发布之前，如下项目应该发布。</p>
+        <div class="well well-small">
+          {% include "table/entries.html" with entries=entry.preludes %}
+        </div>
+      {% endif %}
+      
       <h3>Reviews</h3>
       <h5>Product Design Review</h5>
       <p>
-        {% with entry.prod_design_review_status as status %}{% include "span/approval.html" %}{% endwith %}
-        <a data-toggle="modal" href="#form-prod-design-review"><i class="icon-pencil"></i></a>
+        {% include "span/approval.html" with status=entry.prod_design_review_status %}
+        <a data-toggle="modal" href="#modal-prod-design-review"><i class="icon-pencil"></i></a>
         {% if entry.prod_design_doc %}
           <code>{{ entry.prod_design_doc }}</code> <a href="{{ entry.prod_design_doc }}"><i class="icon-arrow-right"></i></a>
         {% endif %}
         {% ifequal entry.prod_design_review_status "missing" %}
-          本发布需要<a data-toggle="modal" href="#form-entry-edit">填写产品设计文档</a>，或标记为免去 review。
+          本发布需要<a data-toggle="modal" href="#modal-entry-edit">填写产品设计文档</a>，或标记为免去 review。
         {% endifequal %}
       </p>
-      <h5>Engineering Design Review</h5>
+      <h5>Eng Design Review</h5>
       <p>
-        {% with entry.eng_design_review_status as status %}{% include "span/approval.html" %}{% endwith %}
-        <a data-toggle="modal" href="#form-eng-design-review"><i class="icon-pencil"></i></a>
+        {% include "span/approval.html" with status=entry.eng_design_review_status %}
+        <a data-toggle="modal" href="#modal-eng-design-review"><i class="icon-pencil"></i></a>
         {% if entry.eng_design_doc %}
           <code>{{ entry.eng_design_doc }}</code> <a href="{{ entry.eng_design_doc }}"><i class="icon-arrow-right"></i></a>
         {% endif %}
         {% ifequal entry.eng_design_review_status "missing" %}
-          本发布需要<a data-toggle="modal" href="#form-entry-edit">填写工程设计文档</a>，或标记为免去 review。
+          本发布需要<a data-toggle="modal" href="#modal-entry-edit">填写工程设计文档</a>，或标记为免去 review。
         {% endifequal %}
       </p>
-      <h3>动态</h3>
-      {% with entry.stories as stories %}{% include "ul/stories.html" %}{% endwith %}
+      <h5>Marketing Plan</h5>
+      <p>
+        {% include "span/approval.html" with status=entry.mktg_review_status %}
+        <a data-toggle="modal" href="#modal-mktg-review"><i class="icon-pencil"></i></a>
+        {% if entry.mktg_doc %}
+          <code>{{ entry.mktg_doc }}</code> <a href="{{ entry.mktg_doc }}"><i class="icon-arrow-right"></i></a>
+        {% endif %}
+        {% ifequal entry.mktg_review_status "missing" %}
+          本发布需要<a data-toggle="modal" href="#modal-entry-edit">填写营销计划</a>，或标记为免去。
+        {% endifequal %}
+      </p>
+
+      <h3>历史</h3>
+      {% include "ul/stories.html" with stories=entry.stories %}
       <form action="/entries/{{ entry.key }}/stories" method="post">
         <div class="control-group"><textarea type="text" name="text" class="span8" placeholder="说点啥..." autocomplete="off" required></textarea></div>
         <button type="submit" data-loading-text="发表ing..." class="btn btn-primary">发表</button><span class="help-inline">支持 Markdown 格式。</span>
       </form>
+
     </div>
     <div class="span4">
       <h5>项目成员</h5>
       <ul class="unstyled">
         {% for notifier in entry.notifiers %}
-        <li>{% with notifier as person %}{% include "a/person.html" %}{% endwith %}</li>
+        <li>{% include "a/person.html" with person=notifier %}</li>
         {% empty %}
         本项目还没有成员。
         {% endfor %}
@@ -86,22 +116,23 @@
       <ul class="unstyled">
         {% if entry.calendar_view_uri %}
         <li>
-          <a href="{{ entry.calendar_view_uri }}">在 Google Calendar 中查看 &raquo;</a>
+          <a href="{{ entry.calendar_view_uri }}">在 Google Calendar 中查看 »</a>
         </li>
         {% endif %}
         {% if entry.created_by %}
         <li>
-          由 {% with entry.created_by as person %}{% include "a/person.html" %}{% endwith %} 创建
+          由 {% include "a/person.html" with person=entry.created_by %} 创建
         </li>
         {% endif %}
         <li>创建于 {{ entry.created_at|cst|date:"SHORT_DATETIME_FORMAT" }}</li>
-        <li>最后更新于{{ entry.modified_at|cst|date:"SHORT_DATETIME_FORMAT" }}</li>
+        <li>最后更新于 {{ entry.modified_at|cst|date:"SHORT_DATETIME_FORMAT" }}</li>
       </ul>
-      <p><a data-toggle="modal" href="#form-entry-edit"><i class="icon-pencil"></i>修改发布信息、文档</a></p>
+      <p><a data-toggle="modal" href="#modal-entry-edit"><i class="icon-pencil"></i>修改发布信息、文档</a></p>
     </div>
   </div>
-{% include "modal/entry_edit.html" %}
-{% include "modal/prod_design_review.html" %}
-{% include "modal/eng_design_review.html" %}
-{% with entry.status as status %}{% include "modal/status.html" %}{% endwith %}
+  {% include "modal/entry_edit.html" %}
+  {% include "modal/prod_design_review.html" %}
+  {% include "modal/eng_design_review.html" %}
+  {% include "modal/mktg_review.html" %}
+  {% include "modal/status.html" with status=entry.status %}
 {% endblock %}

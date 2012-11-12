@@ -62,8 +62,9 @@
           {% endfor %}
           {% endwith %}
           <li class="nav-header">Design Reviews</li>
-          <li{% ifequal request.path "/reviews/prod" %} class="active"{% endifequal %}><a href="/reviews/prod">Product Design Reviews</a></li>
-          <li{% ifequal request.path "/reviews/eng" %} class="active"{% endifequal %}><a href="/reviews/eng">Engineering Design Reviews</a></li>
+          <li{% ifequal request.path "/reviews/prod_design" %} class="active"{% endifequal %}><a href="/reviews/prod_design">Product Design Reviews</a></li>
+          <li{% ifequal request.path "/reviews/eng_design" %} class="active"{% endifequal %}><a href="/reviews/eng_design">Eng Design Reviews</a></li>
+          <li{% ifequal request.path "/reviews/mktg" %} class="active"{% endifequal %}><a href="/reviews/mktg">Marketing Reviews</a></li>
         </ul>
       </div>
       <div id="content" class="span10">

@@ -1,21 +1,18 @@
 {% ifequal status "new" %}
-<span class="label label-info" rel="tooltip" title="尚未开始实质工作">New</span>
+<span class="label label-default" rel="tooltip" title="尚未开始实质工作">New</span>
 {% endifequal %}
 {% ifequal status "in progress" %}
 <span class="label label-info" rel="tooltip" title="正在进行设计和研发工作">In progress</span>
 {% endifequal %}
 {% ifequal status "completed" %}
-<span class="label label-success" rel="tooltip" title="功能已完成">Completed</span>
+<span class="label label-warning" rel="tooltip" title="功能已完成">Completed</span>
 {% endifequal %}
 {% ifequal status "ready" %}
-<span class="label label-success" rel="tooltip" title="已就绪，随时都可以发布">Ready</span>
+<span class="label label-important" rel="tooltip" title="已就绪，随时都可以发布">Ready</span>
 {% endifequal %}
 {% ifequal status "launched" %}
 <span class="label label-success" rel="tooltip" title="已成功发布">Launched</span>
 {% endifequal %}
 {% ifequal status "cancelled" %}
-<span class="label label-important" rel="tooltip" title="发布已被取消">Canceled</span>
+<span class="label label-inverse" rel="tooltip" title="发布已被取消">Canceled</span>
 {% endifequal %}
-{% if entry.delayed %}<br>
-<span class="label label-important" rel="tooltip" title="预定发布时间已经过了">Delayed</span>
-{% endif %}

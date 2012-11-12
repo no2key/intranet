@@ -91,14 +91,17 @@ class Entry(db.Model):
         required=True,
         choices=set(settings.IMPACTS))
     project = db.ReferenceProperty(Project, collection_name="entries")
-    prod_design_doc = db.LinkProperty()
-    eng_design_doc = db.LinkProperty()
 
     status = db.StringProperty(
         required=True,
         default="new",
         choices=set(settings.LAUNCH_STATUSES)
     )
+
+    prod_design_doc = db.LinkProperty()
+    eng_design_doc = db.LinkProperty()
+    mktg_doc = db.LinkProperty()
+
     prod_design_review = db.StringProperty(
         required=True,
         default="new",
@@ -107,12 +110,19 @@ class Entry(db.Model):
         required=True,
         default="new",
         choices=set(settings.APPROVAL_STATUSES))
+    mktg_review = db.StringProperty(
+        required=True,
+        default="new",
+        choices=set(settings.APPROVAL_STATUSES)
+    )
 
-    # For "product"
-    dependency = db.SelfReferenceProperty(collection_name="reliers")
-    # For "platform", this will be filled in
-    due_on = db.DateProperty(required=True)
     type = db.StringProperty(choices=set(["platform", "product"]))
+
+    # For "products"
+    dependency = db.SelfReferenceProperty(collection_name="reliers")
+    # For "platforms"
+    due_on = db.DateProperty(required=True)
+    prelude_to = db.SelfReferenceProperty(collection_name="preludes")
     
     # Automatic properties
     launched_at = db.DateTimeProperty()
@@ -142,58 +152,71 @@ class Entry(db.Model):
       
     @property
     def ready(self):
-      for relier in self.reliers:
-        if not ((relier.prod_design_review_status == "approved" or
-                 relier.prod_design_review_status == "waived") and
-                (relier.eng_design_review_status == "approved" or
-                 relier.eng_design_review_status == "waived")):
-          return False
-      if not ((self.prod_design_review_status == "approved" or
-               self.prod_design_review_status == "waived") and
-              (self.eng_design_review_status == "approved" or
-               self.eng_design_review_status == "waived")):
-        return False
-      return True
+        for relier in self.reliers:
+            if not ((relier.prod_design_review_status == "approved" or
+                     relier.prod_design_review_status == "waived") and
+                    (relier.eng_design_review_status == "approved" or
+                     relier.eng_design_review_status == "waived")):
+                return False
+        if not ((self.prod_design_review_status == "approved" or
+                 self.prod_design_review_status == "waived") and
+                (self.eng_design_review_status == "approved" or
+                 self.eng_design_review_status == "waived")):
+            return False
+        return True
     
     @property
     def prod_design_review_status(self): # Used for display
-      if self.impact in ["beta", "dogfood", "experiment"]:
-        return "waived"
-      else:
-        if not self.prod_design_doc:
-          if self.prod_design_review == "waived":
+        if self.impact in ["beta", "dogfood", "experiment"]:
             return "waived"
-          else:
-            return "missing"
         else:
-          return self.prod_design_review
+            if not self.prod_design_doc:
+                if self.prod_design_review == "waived":
+                    return "waived"
+                else:
+                    return "missing"
+            else:
+                return self.prod_design_review
 
     @property
     def eng_design_review_status(self): # Used for display
-      if self.impact in ["beta", "dogfood", "experiment"]:
-        return "waived"
-      else:
-        if not self.eng_design_doc:
-          if self.eng_design_review == "waived":
+        if self.impact in ["beta", "dogfood", "experiment"]:
             return "waived"
-          else:
-            return "missing"
         else:
-          return self.eng_design_review
+            if not self.eng_design_doc:
+                if self.eng_design_review == "waived":
+                    return "waived"
+                else:
+                    return "missing"
+            else:
+                return self.eng_design_review
+
+    @property
+    def mktg_review_status(self): # Used for display
+        if self.impact in ["minor", "beta", "dogfood", "experiment"]:
+            return "waived"
+        else:
+            if not self.mktg_doc:
+                if self.mktg_review == "waived":
+                    return "waived"
+                else:
+                    return "missing"
+            else:
+                return self.mktg_review
 
     @property
     def active(self):
-      if (self.status == "launched" or self.status == "cancelled"):
-        return False
-      else:
-        return True
+        if (self.status == "launched" or self.status == "cancelled"):
+            return False
+        else:
+            return True
         
     @property
     def delayed(self):
-      if datetime.date.today() > self.due_on and self.status in ["in progress", "new", "completed", "ready"]:
-        return True
-      else:
-        return False
+        if datetime.date.today() > self.due_on and self.status in ["in progress", "new", "completed", "ready"]:
+            return True
+        else:
+            return False
 
 class Story(db.Model):
     type = db.StringProperty(choices=set(["system", "comment"]))

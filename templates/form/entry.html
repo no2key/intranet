@@ -1,80 +1,171 @@
-{% load filters %}<div class="form-horizontal">
-  <fieldset>
-    <div class="control-group">
-      <label class="control-label" for="name">名字<sup>*</sup></label>
-      <div class="controls">
-        <input type="text" class="input-large" id="name" name="name" required value="{{ edit.name }}" />
-      </div>
+{% load filters %}
+<div class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label" for="project">所属项目和名字<sup>*</sup></label>
+    <div class="controls">
+      <select id="project" class="input-small" name="project" required>
+        <option></option>
+        {% for project in all_projects %}
+        <option value="{{ project.key }}"{% if project.key == edit.project.key %} selected{% endif %}>{{ project.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" class="input-large" id="name" name="name" required value="{{ edit.name }}" />
     </div>
-    <div class="control-group">
-      <label class="control-label" for="notes">说明</label>
-      <div class="controls">
-        <textarea type="text" class="input-xlarge" id="notes" name="notes">{{ edit.notes|default:"" }}</textarea>
-        <p class="help-block">支持 Markdown 格式。</p>
-      </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="notes">发布内容</label>
+    <div class="controls">
+      <textarea type="text" class="input-xxlarge" rows="6" id="notes" name="notes">{{ edit.notes|default:"" }}</textarea>
+      <p class="help-block">支持 Markdown 格式。如果本次发布是另外一个发布的早期阶段 (如，是另外一个全量发布的测试版)，在下方选择对应发布后，无需重复填写发布内容。。</p>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="impact">发布级别<sup>*</sup></label>
-      <div class="controls">
-        <select class="input-medium" id="impact" name="impact" required>
-          <option></option>
-          <option value="major"{% ifequal edit.impact "major" %} selected{% endifequal %}>Major (对外全量发布，对用户有重大影响)</option>
-          <option value="minor"{% ifequal edit.impact "minor" %} selected{% endifequal %}>Minor (对外全量发布，对用户没有重大影响)</option>
-          <option value="beta"{% ifequal edit.impact "beta" %} selected{% endifequal %}>Beta (做为测试版对外发布，用户可选择下载)</option>
-          <option value="experimental"{% ifequal edit.impact "experimental" %} selected{% endifequal %}>Experimental (做为小流量实验对外发布，用户会在不知情的情况下用到)</option>          
-          <option value="dogfood"{% ifequal edit.impact "dogfood" %} selected{% endifequal %}>Dogfood (内部工具或内部试用，不对外发布)</option>
-        </select>
-        <p class="help-block">对外全量发布，包括 Major 和 Minor 两种类型，均需通过或免去 Product Design Review 和 Engineering Design Review。</p>
-      </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="prod_design_doc">产品设计文档</label>
+    <div class="controls">
+      <input type="url" class="input-xxlarge" id="prod_design_doc" name="prod_design_doc" placeholder="https://" {% if edit %}value="{{ edit.prod_design_doc|default:"" }}" {% endif %}/>
+      <div class="help-block">Product Design Doc，用于 Product Design Review。</div>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="project">所属项目<sup>*</sup></label>
-      <div class="controls">
-        <select class="input-medium" id="project" name="project" required>
-          <option></option>
-          {% for project in all_projects %}
-          <option value="{{ project.key }}"{% if project.key == edit.project.key %} selected{% endif %}>{{ project.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="eng_design_doc">工程设计文档</label>
+    <div class="controls">
+      <input type="url" class="input-xxlarge" id="eng_design_doc" name="eng_design_doc" placeholder="https://" {% if edit %}value="{{ edit.eng_design_doc|default:"" }}" {% endif %}/>
+      <div class="help-block">Engineering Design Doc，用于 Eng Design Review。</div>
     </div>
-        <div class="control-group">
-      <label class="control-label" for="prod_design_doc">产品设计文档</label>
-      <div class="controls">
-        <input type="url" class="input-xlarge" id="prod_design_doc" name="prod_design_doc" placeholder="https://" {% if edit %}value="{{ edit.prod_design_doc|default:"" }}" {% endif %}/>
-        <p class="help-block">用于 Product Design Review。</p>
-      </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="mktg_doc">营销计划</label>
+    <div class="controls">
+      <input type="url" class="input-xxlarge" id="mktg_doc" name="mktg_doc" placeholder="https://" {% if edit %}value="{{ edit.eng_design_doc|default:"" }}" {% endif %}/>
+      <div class="help-block">Marketing Plan。</div>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="eng_design_doc">工程设计文档</label>
-      <div class="controls">
-        <input type="url" class="input-xlarge" id="eng_design_doc" name="eng_design_doc" placeholder="https://" {% if edit %}value="{{ edit.eng_design_doc|default:"" }}" {% endif %}/>
-        <p class="help-block">用于 Engineering Design Review。</p>
-      </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="impact">发布级别<sup>*</sup></label>
+    <div class="controls">
+      <label class="radio">
+        <input name="impact" type="radio" value="major" class="impact major" required {% ifequal edit.impact "major" %} checked{% endifequal %}>
+        {% include "span/impact.html" with impact="major" %}
+        对外全量发布，对用户有重大影响。要求通过或免去 Product Design Review 和 Eng Design Review，并有 Marketing Plan。
+      </label>
+      <label class="radio">
+        <input name="impact" type="radio" value="minor" class="impact minor" required {% ifequal edit.impact "minor" %} checked{% endifequal %}>
+        {% include "span/impact.html" with impact="minor" %}
+        对外全量发布，但对用户并无重大影响。要求通过或免去 Product Design Review 和 Eng Design Review。
+      </label>
+      <label class="radio">
+        <input name="impact" type="radio" value="beta" class="impact beta" required {% ifequal edit.impact "beta" %} checked{% endifequal %}>
+        {% include "span/impact.html" with impact="beta" %}
+        作为测试版对外公开发布，用户可主动选择下载。
+      </label>
+      <label class="radio">
+        <input name="impact" type="radio" value="experimental" class="impact experimental" required {% ifequal edit.impact "experimental" %} checked{% endifequal %}>
+        {% include "span/impact.html" with impact="experimental" %}
+        作为小流量实验对外发布，用户会在不知情的情况下被随机抽取到使用该版本。
+      </label>
+      <label class="radio">
+        <input name="impact" type="radio" value="dogfood" class="impact dogfood" required {% ifequal edit.impact "dogfood" %} checked{% endifequal %}>
+        {% include "span/impact.html" with impact="dogfood" %}
+        内部工具或内部使用，不对外发布。
+      </label>
     </div>
-  </fieldset>
+  </div>
+
   <div class="control-group">
     <label class="control-label">发布方式<sup>*</sup></label>
     <div class="controls">
+      
       <label class="radio">
         <input type="radio" name="type" value="platform" class="type platform"{% if edit.type == "platform" %} checked="checked"{% endif %} required>
         <strong>自行发布</strong>。我自己是开车的，可能还会载客。
       </label>
-      预定发布日期:
-      <input type="date" autocomplete="off" class="input-small due_on" name="due_on" placeholder="yyyy-mm-dd" {% if edit.type != "platform" %} disabled {% endif %} required {% if edit %}value="{{ edit.due_on|cst|date:"Y-m-d" }}" {% endif %}/>
+
+      <div class="well well-small controls-platform">
+        <label>
+          预定发布日期:
+          <input type="date" autocomplete="off" class="input-small due_on" name="due_on" placeholder="yyyy-mm-dd" {% if edit.type != "platform" %} disabled {% endif %} required {% if edit %}value="{{ edit.due_on|cst|date:"Y-m-d" }}" {% endif %}/>
+        </label>
+        <label>
+          后续发布:
+          <select class="input-medium" name="prelude_to" {% if edit.type != "platform" %} disabled {% endif %}>
+            <option></option>
+            {% for entry in all_active_releases %}
+            <option value="{{ entry.key }}"{% if entry.key == edit.prelude_to.key %} selected{% endif %}{% if edit.key == entry.key %} disabled{% endif %}>
+              [{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }}) - {{ entry.due_on|cst|date:"Y-m-d" }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
       <label class="radio">
         <input type="radio" name="type" value="product" class="type product"{% if edit.type == "product" %} checked="checked"{% endif %} required>
-        <strong>别人帮我发布</strong>。我会搭别人的车。
+        <strong>别人帮我发布</strong>。我会搭车发布。
       </label>
-      要搭的车:
-      <select class="input-medium dependency" name="dependency" {% if edit.type != "product" %} disabled {% endif %} required>
-        <option></option>
-        {% with entry as cur_entry %}
-        {% for entry in all_active_releases %}
-        <option value="{{ entry.key }}"{% if entry.key == edit.dependency.key %} selected{% endif %}{% if cur_entry.key == entry.key %} disabled{% endif %}>[{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }}) - {{ entry.due_on|cst|date:"Y-m-d" }}</option>
-        {% endfor %}
-        {% endwith %}
-      </select>
+      <div class="well well-small controls-product">
+        <table class="table table-hover table-condensed dependency">
+          <thead>
+              <tr>
+                <th></th>
+                <th class="col-status">状态</th>
+                <th class="col-name">名字</th>
+                <th class="col-project">所属项目</th>
+                <th class="col-dueon">发布日期</th>
+              </tr>
+          </thead>
+          <tbody>
+            {% for entry in all_active_releases %}
+            <tr class="impact-{{ entry.impact }}">
+              <td>
+                {% if edit.key != entry.key %}
+                <input type="radio" name="dependency" value="{{ entry.key }}"
+                  {% if entry.key == edit.dependency.key %}checked{% endif %}
+                  {% if edit.type != "product" %}disabled{% else %}
+                    {% if edit.impact == "major" and entry.impact != "major" %}disabled{% endif %}
+                    {% if edit.impact == "minor" and entry.impact != "major" and entry.impact != "minor" %}disabled{% endif %}
+                    {% if edit.impact == "beta" and entry.impact != "major" and entry.impact != "minor" and entry.impact != "beta" %}disabled{% endif %}
+                    {% if edit.impact == "experimental" and entry.impact == "dogfood" %}disabled{% endif %}
+                    {% if edit.impact == "dogfood" and entry.impact != "dogfood" %}disabled{% endif %}
+                  {% endif %}
+                >
+                {% endif %}
+              </td>
+              <td>
+                {% with entry.status as status %}{% include "span/status.html" %}{% endwith %}
+              </td>
+              <td class="col-name">
+                <h5>
+                  <a href="/entries/{{ entry.key }}">{{ entry.name }}</a>&nbsp;
+                  {% with entry.impact as impact %}{% include "span/impact.html" %}{% endwith %}
+                </h5>
+                <p class="snippet">
+                  {{ entry.notes|default:"Owner 很懒，连说明都不写。" }}
+                </p>
+              </td>
+              <td class="col-project">
+                {% with entry.project as project %}{% include "a/project.html" %}{% endwith %}
+              </td>
+              <td class="due_on">{{ entry.due_on|cst|date:"SHORT_DATE_FORMAT" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="help-block">
+        <p>所谓门当户对，搭车有若干规则:</p>
+        <ul class="unstyled">
+          <li>{% include "span/impact.html" with impact="major" %} 若一个发布被定义成 Major, 则其所搭的车也应为 Major。</li>
+          <li>{% include "span/impact.html" with impact="minor" %} 若一个发布被定义成 Major 或 Minor, 意味着其为全量发布，也应搭全量发布的车，即 Major 或 Minor。</li>
+          <li>{% include "span/impact.html" with impact="beta" %} 若一个发布被定义成 Beta, 则要么是成为全量发布的一部分，要么成为其它 Beta 的一部分，即只能搭 Major、Minor 或 Beta 的车。</li>
+          <li>{% include "span/impact.html" with impact="experimental" %} 若一个发布被定义成 Experimental, 则其应该出现在对外发布中，所搭的车也应为 Major、Minor、Beta 或 Experimental。</li>
+          <li>{% include "span/impact.html" with impact="dogfood" %} 若一个发布被定义成 Dogfood, 则其所搭的车也应为 Dogfood</li>
+        </ul>
+      </div>
     </div>
   </div>  
 </div>

@@ -11,82 +11,71 @@
             
             <label class="radio">
               <input type="radio" name="status" value="new"{% ifequal status "new" %} checked="checked"{% endifequal %}>
-              <strong>New (新)</strong>。这是一个新建的发布，还没有开始实质工作。
+              <p>
+                {% include "span/status.html" with status="new" %}
+                这是一个新建的发布，还没有开始实质工作。
+              </p>
             </label>
 
             <label class="radio">
               <input type="radio" name="status" value="in progress"{% ifequal status "in progress" %} checked="checked"{% endifequal %}>
-              <strong>In progress (进行中)</strong>。已经开始进行设计和研发工作。Engineering Design Review 和 Product Design Reviews，代码编写、单元测试等工作应在本阶段完成。
+              <p>
+                {% include "span/status.html" with status="in progress" %}
+                已经开始进行设计和研发工作。Engineering Design Review 和 Product Design Reviews，代码编写、单元测试等工作应在本阶段完成。
+              </p>
             </label>
             
+            {% if not entry.ready %}
+              <div class="alert alert-error">
+                <strong>在完成 review 前，以下流程无法继续</strong>。
+                请先完成 Product Design Review、Engineering Design Review 和 Marketing Plan，并且也保证搭车的所有项目都已完成这三个 review。
+              </div>
+            {% endif %}
+
             <label class="radio">
               <input type="radio" name="status" value="completed"{% ifequal status "completed" %} checked="checked"{% endifequal %}{% if not entry.ready %} disabled{% endif %}>
-              <strong>Completed (已完成)</strong>。所有计划发布的功能都已完成并冻结。如果你是搭别人的车，这意味着你的工作已经基本完成，买好票上车了，接下来的状态将由开车的同学负责。这也意味着测试同学开始开始测试了。
-              {% if not entry.ready %}
-              <div class="alert alert-error">
-                <strong>需要 review</strong>。
-                请先完成 Product Design Review 和 Engineering Design Review。
-              </div>
-              {% endif %}
-              <div class="alert alert-info">选择本状态，会自动向 testing@wandoujia.com 发送一份开发完成通知。请注意在下面的文本框中填写发布附言。</div>
+              <p>
+                {% include "span/status.html" with status="completed" %}
+                所有计划发布的功能都已完成并冻结。如果你是搭别人的车，这意味着你的工作已经基本完成，买好票上车了，接下来的状态将由开车的同学负责。这也意味着测试同学开始开始测试了。<strong>选择本状态后，会自动向 testing@wandoujia.com 发送一份开发完成通知，下面的文本框中的附言会一并发送。</strong>
+              </p>
             </label>
+
+            {% if entry.type == "product" %}
             
-            <label class="radio" disabled>
-              {% if entry.type == "product" %}
-              <input type="radio" name="status" value="ready" disabled>
-              {% else %}
-                {% if entry.ready %}
-                <input type="radio" name="status" value="ready"{% ifequal status "ready" %} checked="checked"{% endifequal %}>
-                {% else %}
-                <input type="radio" name="status" value="ready"{% ifequal status "ready" %} checked="checked"{% endifequal %} disabled>
-                {% endif %}
-              {% endif %}
-              <strong>Ready (就绪)</strong>。所有计划发布的功能，及搭车的所有功能都已研发和测试完成。代码已冻结，随时都可以发布。
-              {% if entry.type == "product" %}
-              <div class="alert alert-info">
-                <strong>搭车项目</strong>。
-                本发布的发布状态是由 {{ entry.dependency.name }} 进行管理的。
-              </div>
-              {% else %}
-              <div class="alert alert-info">选择本状态，会自动向 launch@wandoujia.com 发送一份准备就绪通知。请注意在下面的文本框中填写发布附言。</div>
-              {% endif %}
-              {% if not entry.ready %}
-              <div class="alert alert-error">
-                <strong>需要 review</strong>。
-                请先完成 Product Design Review 和 Engineering Design Review，并且也保证搭车的所有项目都已完成这两个 review。
-              </div>
-              {% endif %}
+            <div>
+              <strong>以下流程由其它发布负责</strong>。
+              本发布属于搭车发布，{% include "span/status.html" with status="ready" %}
+              {% include "span/status.html" with status="launched" %} 状态将由 {{ entry.dependency.name }} 负责标记。状态会自动同步，无需手动更新。
+            </div>
+
+            {% else %}
+            
+            <label class="radio">
+              <input type="radio" name="status" value="ready"{% ifequal status "ready" %} checked="checked"{% endifequal %}{% if not entry.ready %} disabled{% endif %}>
+              <p>
+                {% include "span/status.html" with status="ready" %}
+                所有计划发布的功能，及搭车的所有功能都已研发和测试完成。代码已冻结，随时都可以发布。
+                <strong>选择本状态后，会自动向 launch@wandoujia.com 发送一份准备就绪通知，下面的文本框中的附言会一并发送。</strong>
+              </p>
             </label>
 
             <label class="radio" disabled>
-              {% if entry.type == "product" %}
-              <input type="radio" name="status" value="launched" disabled>
-              {% else %}
-                {% if entry.ready %}
-                <input type="radio" name="status" value="launched"{% ifequal status "launched" %} checked="checked"{% endifequal %}>
-                {% else %}
-                <input type="radio" name="status" value="launched"{% ifequal status "launched" %} checked="checked"{% endifequal %} disabled>
-                {% endif %}
-              {% endif %}
-              <strong>Launched (已发布)</strong>。代码已成功推送 (而且暂时还没有回滚...)
-              {% if entry.type == "product" %}
-              <div class="alert alert-info">
-                <strong>搭车项目</strong>。
-                本发布的发布状态是由 {{ entry.dependency.name }} 进行管理的。
-              </div>
-              {% endif %}
-              {% if not entry.ready %}
-              <div class="alert alert-error">
-                <strong>需要 review</strong>。
-                请先完成 Product Design Review 和 Engineering Design Review，并且也保证搭车的所有项目都已完成这两个 review。
-              </div>
-              {% endif %}
-              <div class="alert alert-info">选择本状态，会自动向 all@wandoujia.com 发送一份发布通知。请注意在下面的文本框中填写发布附言。</div>
+              <input type="radio" name="status" value="launched"{% ifequal status "launched" %} checked="checked"{% endifequal %}{% if not entry.ready %} disabled{% endif %}>
+              <p>
+                {% include "span/status.html" with status="launched" %}
+                代码已成功推送 (而且暂时还没有回滚...)
+                <strong>选择本状态后，会自动向 all@wandoujia.com 发送一份发布通知，下面的文本框中的附言会一并发送。</strong>
+              </p>
             </label>
+
+            {% endif %}
             
             <label class="radio">
               <input type="radio" name="status" value="cancelled"{% ifequal status "cancelled" %} checked="checked"{% endifequal %}>
-              <strong>Cancelled (已取消)</strong>。因故本发布已取消了。
+              <p>
+                {% include "span/status.html" with status="cancelled" %}
+                本发布因故取消。
+              </p>
             </label>
 
           </div>

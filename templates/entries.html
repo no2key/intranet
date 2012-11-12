@@ -5,36 +5,31 @@
 {% block content %}
 <ul class="nav nav-tabs">
   <li class="active">
-    <a href="#active_entries" data-toggle="tab">尚未发布
+    <a href="#active_releases" data-toggle="tab">即将发布
       <span class="badge">{{ all_active_entries|length }}</span>
     </a>
   </li>
   <li>
-    <a href="#launched_entries" data-toggle="tab">已发布
+    <a href="#launched_releases" data-toggle="tab">已发布
       <span class="badge">{{ all_launched_entries|length }}</span>
     </a>
   </li>
   <li>
-    <a href="#cancelled_entries" data-toggle="tab">已取消
+    <a href="#cancelled_releases" data-toggle="tab">已取消
       <span class="badge">{{ all_cancelled_entries|length }}</span>
     </a>
   </li>
 </ul>
 <div class="tab-content">
-  <div class="tab-pane active" id="active_entries">
-    {% with all_active_entries as entries %}
-      {% include "table/entries.html" %}
-    {% endwith %}    
+  <div class="tab-pane active" id="active_releases">
+    {# include "table/entries.html" with entries=recent_launched_releases #}
+    {% include "table/entries.html" with entries=all_active_releases %}
   </div>
-  <div class="tab-pane" id="launched_entries">
-    {% with all_launched_entries as entries %}
-      {% include "table/entries.html" %}
-    {% endwith %}
+  <div class="tab-pane" id="launched_releases">
+    {% include "table/entries.html" with entries=all_launched_releases %}
   </div>
-  <div class="tab-pane" id="cancelled_entries">
-    {% with all_cancelled_entries as entries %}
-      {% include "table/entries.html" %}
-    {% endwith %}
+  <div class="tab-pane" id="cancelled_releases">
+    {% include "table/entries.html" with entries=all_cancelled_entries %}
   </div>
 </div>
 {% endblock %}

@@ -27,7 +27,7 @@ sup {
 }
 /* tables */
 .col-status {
-  width: 3em;
+  width: 5em;
 }
 .col-name {
   overflow: hidden;
@@ -36,13 +36,16 @@ sup {
   width: 8em;
 }
 .col-pdr {
-  width: 3em;
+  width: 4em;
 }
 .col-edr {
-  width: 3em;
+  width: 4em;
+}
+.col-mr {
+  width: 4em;
 }
 .col-dueon {
-  width: 5em;
+  width: 8em;
 }
 .snippet {
   overflow: hidden;
@@ -69,12 +72,18 @@ footer {
 }
 
 /* Overwritting modal dialogs */
-.modal {
+.modal-entry {
+  height: 600px;
+  margin-left: -400px;
   margin-top: -300px;
+  width: 800px;
 }
-.modal-body {
+.modal-entry .modal-body {
+  height: 500px;
   max-height: 500px;
 }
-.table h5 {
+/* Table */
+table h5,
+table p {
   margin: 0;
 }

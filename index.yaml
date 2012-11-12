@@ -34,6 +34,24 @@ indexes:
 
 - kind: Entry
   properties:
+  - name: impact
+  - name: status
+  - name: type
+  - name: due_on
+
+- kind: Entry
+  properties:
+  - name: mktg_review
+  - name: due_on
+
+- kind: Entry
+  properties:
+  - name: mktg_review
+  - name: status
+  - name: due_on
+
+- kind: Entry
+  properties:
   - name: prod_design_review
   - name: due_on
 
@@ -75,6 +93,12 @@ indexes:
   - name: status
   - name: type
   - name: due_on
+
+- kind: Entry
+  properties:
+  - name: status
+  - name: type
+  - name: launched_at
 
 - kind: Entry
   properties:

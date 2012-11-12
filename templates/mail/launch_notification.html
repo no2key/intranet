@@ -6,13 +6,13 @@
 <h3>发布内容</h3>
 <h4>[{{ entry.project.name }}] {{ entry.name }} ({{ entry.impact }})</h4>
 <blockquote>{{ entry.notes|markdown }}</blockquote>
-{% for relier in entry.reliers %}
 <ul>
   <li>Product Design Doc: {{ entry.prod_design_doc }}</li>
   <li>Engineering Design Doc: {{ entry.eng_design_doc }}</li>
 </ul>
+{% for relier in entry.reliers %}
 <h4>[{{ relier.project.name }}] {{ relier.name }} ({{ relier.impact }})</h4>
-<blockquote>{{ relier.notes }}</blockquote>
+<blockquote>{{ relier.notes|markdown }}</blockquote>
 <ul>
   <li>Product Design Doc: {{ relier.prod_design_doc }}</li>
   <li>Engineering Design Doc: {{ relier.eng_design_doc }}</li>
