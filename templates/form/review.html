@@ -11,6 +11,10 @@
         <strong>Waived</strong>。本发布不需要设计文档。
       </label>
       {% else %}
+      {% ifequal status "waived" %}
+      <div class="alert">
+        按发布影响级别，本文档已自动标记为无需 review，以下状态将不会生效。
+      </div>
       <label class="radio">
         <input type="radio" name="status" value="new" required{% ifequal status "new" %} checked{% endifequal %}>
         <strong>New</strong>。刚刚收到，还没有处理。

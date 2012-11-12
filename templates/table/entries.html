@@ -30,7 +30,7 @@
           <span class="muted">↳ </span>
           {% include "a/project.html" with project=entry.project %}
           <span class="divider">»</span>
-          {% include "a/entry.html" %}
+          <strong>{% include "a/entry.html" %}</strong>
           {% include "span/impact.html" with impact=entry.impact %}
         </p>
         {% endfor %}

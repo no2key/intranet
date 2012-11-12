@@ -11,8 +11,9 @@ To deploy your own version, rename `app-sample.yaml` to `app.yaml`, `settings-sa
 - POST `entries/:id/followers`
 - POST `entries/:id/followers/:user`
 - POST `entries/:id/stories`
-- POST `entries/:id/review/prod`
-- POST `entries/:id/review/eng`
+- POST `entries/:id/review/prod_design`
+- POST `entries/:id/review/eng_design`
+- POST `entries/:id/review/mktg`
 - POST `entries/:id/status`
 - GET `projects`
 - POST `projects`
