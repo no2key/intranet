@@ -40,7 +40,7 @@
   <div class="control-group">
     <label class="control-label" for="mktg_doc">营销计划</label>
     <div class="controls">
-      <input type="url" class="input-xxlarge" id="mktg_doc" name="mktg_doc" placeholder="https://" {% if edit %}value="{{ edit.eng_design_doc|default:"" }}" {% endif %}/>
+      <input type="url" class="input-xxlarge" id="mktg_doc" name="mktg_doc" placeholder="https://" {% if edit %}value="{{ edit.mktg_doc|default:"" }}" {% endif %}/>
       <div class="help-block">Marketing Plan。</div>
     </div>
   </div>
