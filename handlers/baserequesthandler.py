@@ -21,26 +21,8 @@ class BaseRequestHandler(webapp2.RequestHandler):
         self.init_time = time.time()
         self.user = users.get_current_user()
         self.person = models.Person.from_user(self.user)
-        os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
-
-    def __del__(self):
-        logging.debug("Handler for %s took %.2f seconds" %
-                      (self.request.url, time.time() - self.init_time))
-                          
-    def check_user(self):
-        if not self.person or not self.person.is_setup:
-            self.redirect('/signup/step1')
-        
-    def render(self, template_name, template_values={}, to_string=False):
-        # Detect Chrome
-        chrome = False
-        uastring = self.request.headers.get('user_agent')
-        if "Chrome" in uastring:
-            chrome = True
-        # Preset values for the template
-        values = {
+        self.__class__.values = {
             'request': self.request,
-            'chrome': chrome,
             'person': self.person,
             'impacts': settings.IMPACTS,
             'project_statuses': settings.PROJECT_STATUSES,
@@ -69,12 +51,33 @@ class BaseRequestHandler(webapp2.RequestHandler):
             'calendar': settings.CALENDAR,
             'ga': settings.GA
         }
+        os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
+
+    def __del__(self):
+        logging.debug("Handler for %s took %.2f seconds" %
+                      (self.request.url, time.time() - self.init_time))
+                          
+    def check_user(self):
+        if not self.person or not self.person.is_setup:
+            self.redirect('/signup/step1')
+        
+    def render(self, template_name, template_values={}, to_string=False):
+        # Detect Chrome
+        chrome = False
+        uastring = self.request.headers.get('user_agent')
+        if "Chrome" in uastring:
+            chrome = True
+        # Preset values for the template
 
         # Add manually supplied template values
-        values.update(template_values)
-
+        self.__class__.values['chrome'] = chrome
+        self.__class__.values.update(template_values)
+        
+        logging.info('begin to render:' + time.strftime('%H:%M:%S',time.localtime(time.time())))
         # Render template
         if to_string:
-            return render_to_string(template_name, values)
+            return render_to_string(template_name, self.__class__.values)
         else:
-            self.response.out.write(render_to_string(template_name, values))
+            self.response.out.write(render_to_string(template_name, self.__class__.values))
+        logging.info('render ended:' + time.strftime('%H:%M:%S',time.localtime(time.time())))
+
