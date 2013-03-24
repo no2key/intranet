@@ -3,8 +3,8 @@ import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates/'))
 INSTALLED_APPS = ('customtags', 'django.contrib.markup')
 
-TEMPLATE_DEBUG = True
-DEBUG = True
+TEMPLATE_DEBUG = False # When deployed to production, this should be set FALSE
+DEBUG = False # When deployed to production, this should be set FALSE
 APP_ID = "your-app-id"
 CALENDAR = "your-calendar-address@group.calendar.google.com"
 

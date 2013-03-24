@@ -9,15 +9,3 @@ queue:
     max_backoff_seconds: 3600
     max_doublings: 2
     task_age_limit: 1d
-#- name: barqueue
-#  rate: 1/s
-#  retry_parameters:
-#    min_backoff_seconds: 10
-#    max_backoff_seconds: 200
-#    max_doublings: 0
-#- name: bazqueue
-#  rate: 1/s
-#  retry_parameters:
-#    min_backoff_seconds: 10
-#    max_backoff_seconds: 200
-#    max_doublings: 2

@@ -277,6 +277,12 @@ class FixReviewStatus(webapp2.RequestHandler):
         self.response.out.write("Fix eng review status for %s.<br>" % entry.name)
         entry.put()
 
+class FixEmailStatus(webapp2.RequestHandler):
+  def get(self):
+      emails = models.Email.all()
+      for email in emails:
+        taskqueue.add(url="/services/email/%s" % email.key())
+        self.response.out.write("Fix email status for %s.<br>" % email.subject)
     
 def generate_email(email):
   email.put()
@@ -352,6 +358,7 @@ urls = [
     (r'/services/sync/profiles', SyncProfiles),
     (r'/services/check/delays', CheckDelays),
     (r'/services/fix/review-status', FixReviewStatus),
+    (r'/services/fix/email-status', FixEmailStatus),
     IncomingMail.mapping()
 ]
 
